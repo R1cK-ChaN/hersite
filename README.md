@@ -1,0 +1,196 @@
+# HerSite
+
+An AI-powered personal website builder for non-coders. Users interact through a chat sidebar to build and customize their Astro-based personal website, with a live preview alongside the chat. Built as a single-user local app — no auth required.
+
+## Current Status
+
+**Phase 1 MVP — feature-complete, not yet runtime-tested.**
+
+All source code is written, TypeScript compiles cleanly across the entire monorepo, and the frontend Vite build produces output successfully. The end-to-end flow (wizard > chat > preview > publish) has not yet been tested at runtime because it requires an `ANTHROPIC_API_KEY` and a running dev environment.
+
+### What's Built
+
+| Area | Status | Details |
+|------|--------|---------|
+| Monorepo scaffolding | Done | pnpm workspaces + Turborepo, shared TS config, pre-commit hooks (husky + lint-staged + prettier) |
+| Shared types (`packages/shared`) | Done | `ChatMessage`, `FileAttachment`, `ProjectInfo`, `DeployStatus`, typed Socket.IO events |
+| Astro templates (3) | Done | Blog, Portfolio, Blog+Portfolio — all with Valentine's pink theme, CSS custom properties, MDX content collections, responsive design |
+| Backend server (`apps/server`) | Done | Express + Socket.IO, 6 service modules, Claude API agent with tool-use loop, file upload, docx conversion, deploy, git |
+| Frontend editor (`apps/editor`) | Done | React 19 + Vite 6, Zustand stores, 30+ components (wizard, chat, preview, publish), Tailwind CSS v4 + shadcn-style UI primitives |
+| Wiring & integration | Done | Vite proxy config, Turborepo pipeline, Socket.IO event binding |
+| Runtime testing | Not started | Requires `ANTHROPIC_API_KEY` to test agent flow |
+
+## Architecture
+
+```
+hersite/
+├── apps/
+│   ├── editor/          # React + Vite frontend (port 5173)
+│   └── server/          # Express + Socket.IO backend (port 3001)
+├── packages/
+│   └── shared/          # Shared TypeScript types & event definitions
+└── templates/
+    ├── blog/            # Astro blog template
+    ├── portfolio/       # Astro portfolio template
+    └── blog-portfolio/  # Combined blog + portfolio template
+```
+
+### Frontend (`apps/editor`)
+
+- **React 19** with **Vite 6** and **Tailwind CSS v4**
+- **Zustand** for state management (4 stores: chat, project, preview, UI)
+- **Socket.IO client** for real-time communication with the server
+- **shadcn-style UI primitives** built on Radix UI (Button, Dialog, Progress, ScrollArea, etc.)
+- **Framer Motion** for wizard step animations
+- **react-markdown** + remark-gfm for rendering agent responses
+- **react-dropzone** for drag-and-drop file uploads
+- **sonner** for toast notifications
+
+Key UI flows:
+- **Setup Wizard** — Welcome > Template Selection (3 templates) > Profile Setup (name/tagline) > Site Generation
+- **Chat Sidebar** — Message list with streaming support, file attachment chips, markdown rendering
+- **Preview Panel** — iframe showing the Astro dev server output, desktop/mobile device toggle
+- **Publish Flow** — Publish button > confirmation dialog > deploy status badge in status bar
+
+### Backend (`apps/server`)
+
+- **Express** HTTP server with **Socket.IO** for real-time events
+- **Multer** for multipart file upload handling
+- **http-proxy-middleware** to proxy preview iframe requests to the Astro dev server
+
+#### Services
+
+| Service | File | Purpose |
+|---------|------|---------|
+| **ProjectService** | `services/ProjectService.ts` | Scaffolds new projects by copying Astro templates, personalizes site content, manages project file read/write with path traversal protection |
+| **BuildService** | `services/BuildService.ts` | Spawns and manages the Astro dev server as a child process, proxies preview requests, handles `astro build` for production |
+| **AgentService** | `services/agent/AgentService.ts` | Orchestrates Claude API calls with an agentic tool-use loop — sends user messages, executes tool calls (file operations, theme updates, blog post creation), streams responses back |
+| **FileConverterService** | `services/FileConverterService.ts` | Converts `.docx` files to MDX blog posts using mammoth (docx > HTML), turndown (HTML > Markdown), and sharp (image optimization to WebP) |
+| **DeployService** | `services/DeployService.ts` | Runs `astro build` then `vercel deploy --prod` via child process, parses the deployment URL from stdout |
+| **GitService** | `services/GitService.ts` | Git operations via simple-git — init, commit, history, revert for undo support |
+
+#### Agent Tools
+
+The Claude agent has access to 8 tools for modifying the user's Astro site:
+
+| Tool | Description |
+|------|-------------|
+| `readFile(path)` | Read a project file's contents |
+| `writeFile(path, content)` | Create or overwrite a file |
+| `modifyFile(path, search, replace)` | Find-and-replace within a file |
+| `listFiles()` | List all project files |
+| `createBlogPost(title, content, description, tags?)` | Create an MDX blog post with frontmatter |
+| `createPage(slug, title, content)` | Create a new Astro page and add it to navigation |
+| `updateTheme(variables)` | Update CSS custom properties in theme.css |
+| `deleteFile(path)` | Remove a file from the project |
+
+#### Socket Events
+
+| Direction | Event | Purpose |
+|-----------|-------|---------|
+| Client > Server | `chat:message` | Send a user message (with optional file attachment IDs) |
+| Client > Server | `project:create` | Create a new project from a template |
+| Client > Server | `publish:confirm` | Trigger build + deploy to Vercel |
+| Server > Client | `agent:message` | Complete agent response |
+| Server > Client | `agent:typing` | Agent thinking indicator |
+| Server > Client | `agent:stream` | Streamed response chunks |
+| Server > Client | `agent:error` | Error message |
+| Server > Client | `preview:update` | Files changed, refresh preview |
+| Server > Client | `deploy:status` | Deploy progress (idle/deploying/deployed/failed) |
+| Server > Client | `project:created` | Project scaffolding complete |
+
+### Templates
+
+All three templates share:
+- **CSS custom properties** for theming (`--color-primary`, `--color-bg`, `--font-body`, etc.)
+- **Astro v5 content layer API** with glob loader for MDX content collections
+- **Layout.astro** with responsive nav, footer ("Built with HerSite")
+- **Valentine's pink theme** (`#e91e8c` primary)
+- **Google Fonts** (Inter)
+- **Mobile-responsive** design
+- **No Tailwind** — pure CSS with custom properties so the agent can easily modify styles
+
+#### Blog Template
+- Home page with recent posts list
+- Blog listing page with date/tag display
+- Individual post page with rendered MDX
+- 2 sample blog posts
+
+#### Portfolio Template
+- Home page with responsive CSS grid (3/2/1 columns)
+- Portfolio listing with project cards (hover effects, image zoom)
+- Individual project page with CSS-only lightbox
+- 3 sample projects with placeholder SVG images
+
+#### Blog + Portfolio Template
+- Combined home page with "Recent Posts" and "Featured Work" sections
+- Full blog section (listing + individual posts)
+- Full portfolio section (grid + individual projects)
+- "View all" links between sections
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js** >= 22
+- **pnpm** >= 9
+
+### Setup
+
+```bash
+# Install dependencies
+pnpm install
+
+# Copy environment file and add your API key
+cp .env.example .env
+# Edit .env and add:
+#   ANTHROPIC_API_KEY=sk-ant-...
+#   VERCEL_TOKEN=...        (optional, for deploy)
+
+# Start development
+pnpm dev
+```
+
+This starts:
+- **Editor** at `http://localhost:5173` (Vite dev server)
+- **Server** at `http://localhost:3001` (Express + Socket.IO)
+
+The Vite dev server proxies `/api`, `/socket.io`, and `/preview` requests to the backend server.
+
+### Usage Flow
+
+1. Open `http://localhost:5173` in your browser
+2. The **Setup Wizard** appears — choose a template, enter your name and tagline
+3. The server scaffolds your site from the template and starts an Astro dev server
+4. The **Editor** loads with a chat sidebar and live preview
+5. Type natural language instructions in the chat (e.g., "Change the primary color to blue", "Add a new blog post about my trip to Paris")
+6. The AI agent modifies your site files and the preview updates via Astro HMR
+7. Click **Publish** to build and deploy to Vercel
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend framework | React 19 |
+| Frontend build | Vite 6 |
+| Styling | Tailwind CSS v4, shadcn-style components, Radix UI |
+| State management | Zustand 5 |
+| Real-time | Socket.IO 4 |
+| Backend | Express 4, Node.js 22 |
+| AI | Claude API (@anthropic-ai/sdk) with tool-use |
+| Site framework | Astro 5 with MDX |
+| File conversion | mammoth (docx), turndown (HTML>MD), sharp (images) |
+| Version control | simple-git |
+| Deployment | Vercel CLI |
+| Monorepo | pnpm workspaces, Turborepo |
+| Code quality | TypeScript 5 (strict), husky, lint-staged, prettier |
+
+## Known Limitations (MVP)
+
+- **Single-user only** — one project at a time, no authentication
+- **No persistent storage** — project state lives in memory; restarting the server loses the current session (files on disk persist)
+- **No Docker** — runs directly on the host
+- **Agent model** — hardcoded to `claude-sonnet-4-5-20250929`; can be changed in `AgentService.ts`
+- **No tests** — test suite not yet implemented
+- **Preview proxy** — the Astro dev server port is detected from stdout parsing, which could be fragile
+- **Deploy requires Vercel CLI** — must be authenticated via `VERCEL_TOKEN` or `vercel login`
