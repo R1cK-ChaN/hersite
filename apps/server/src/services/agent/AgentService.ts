@@ -15,7 +15,11 @@ async function getClient(): Promise<Anthropic> {
   const apiKey = await CredentialService.getApiKey();
 
   if (!cachedClient || cachedApiKey !== apiKey) {
-    cachedClient = new Anthropic({ apiKey });
+    const options: ConstructorParameters<typeof Anthropic>[0] = { apiKey };
+    if (process.env.ANTHROPIC_BASE_URL) {
+      options.baseURL = process.env.ANTHROPIC_BASE_URL;
+    }
+    cachedClient = new Anthropic(options);
     cachedApiKey = apiKey;
     const source = await CredentialService.getCredentialSource();
     console.log(`Anthropic client initialized (source: ${source})`);
@@ -38,7 +42,7 @@ const conversationHistory: ConversationMessage[] = [];
 
 async function executeTool(
   name: string,
-  input: Record<string, unknown>
+  input: Record<string, unknown>,
 ): Promise<string> {
   const projectPath = ProjectService.getProjectPath();
   if (!projectPath && name !== "listFiles") {
@@ -49,7 +53,7 @@ async function executeTool(
     switch (name) {
       case "readFile": {
         const content = await ProjectService.getFileContent(
-          input.path as string
+          input.path as string,
         );
         return content;
       }
@@ -57,14 +61,14 @@ async function executeTool(
       case "writeFile": {
         await ProjectService.writeFile(
           input.path as string,
-          input.content as string
+          input.content as string,
         );
         return `File written successfully: ${input.path}`;
       }
 
       case "modifyFile": {
         const content = await ProjectService.getFileContent(
-          input.path as string
+          input.path as string,
         );
         const search = input.search as string;
         const replace = input.replace as string;
@@ -103,10 +107,7 @@ async function executeTool(
           .join("\n");
 
         const content = `${frontmatter}\n\n${input.content}`;
-        await ProjectService.writeFile(
-          `src/content/blog/${slug}.mdx`,
-          content
-        );
+        await ProjectService.writeFile(`src/content/blog/${slug}.mdx`, content);
         return `Blog post created: src/content/blog/${slug}.mdx`;
       }
 
@@ -124,23 +125,23 @@ import Layout from '../layouts/Layout.astro';
 `;
         await ProjectService.writeFile(
           `src/pages/${input.slug}.astro`,
-          pageContent
+          pageContent,
         );
 
         // Add to navigation in Layout.astro
         try {
           const layoutContent = await ProjectService.getFileContent(
-            "src/layouts/Layout.astro"
+            "src/layouts/Layout.astro",
           );
           const navLinkHtml = `<a href="/${input.slug}">${input.title}</a>`;
           // Insert before closing </nav>
           const updatedLayout = layoutContent.replace(
             "</nav>",
-            `  ${navLinkHtml}\n      </nav>`
+            `  ${navLinkHtml}\n      </nav>`,
           );
           await ProjectService.writeFile(
             "src/layouts/Layout.astro",
-            updatedLayout
+            updatedLayout,
           );
         } catch {
           // Layout might not have nav in expected format
@@ -152,11 +153,13 @@ import Layout from '../layouts/Layout.astro';
       case "updateTheme": {
         const variables = input.variables as Record<string, string>;
         let themeContent = await ProjectService.getFileContent(
-          "src/styles/theme.css"
+          "src/styles/theme.css",
         );
 
         for (const [varName, value] of Object.entries(variables)) {
-          const regex = new RegExp(`(${varName.replace("--", "\\-\\-")}):\\s*[^;]+;`);
+          const regex = new RegExp(
+            `(${varName.replace("--", "\\-\\-")}):\\s*[^;]+;`,
+          );
           if (regex.test(themeContent)) {
             themeContent = themeContent.replace(regex, `$1: ${value};`);
           }
@@ -183,7 +186,7 @@ export const AgentService = {
   async processMessage(
     userMessage: string,
     attachments?: string[],
-    onStream?: (chunk: string, messageId: string) => void
+    onStream?: (chunk: string, messageId: string) => void,
   ): Promise<{ response: ChatMessage; changedFiles: string[] }> {
     const messageId = uuid();
     const changedFiles: string[] = [];
@@ -211,7 +214,7 @@ export const AgentService = {
     while (true) {
       const anthropic = await getClient();
       const response = await anthropic.messages.create({
-        model: "claude-sonnet-4-5-20250929",
+        model: process.env.AI_MODEL || "claude-sonnet-4-5-20250929",
         max_tokens: 4096,
         system: systemPrompt,
         tools: agentTools,
@@ -257,14 +260,19 @@ export const AgentService = {
       for (const toolUse of toolUseBlocks) {
         const result = await executeTool(
           toolUse.name,
-          toolUse.input as Record<string, unknown>
+          toolUse.input as Record<string, unknown>,
         );
 
         // Track changed files
         if (
-          ["writeFile", "modifyFile", "createBlogPost", "createPage", "updateTheme", "deleteFile"].includes(
-            toolUse.name
-          )
+          [
+            "writeFile",
+            "modifyFile",
+            "createBlogPost",
+            "createPage",
+            "updateTheme",
+            "deleteFile",
+          ].includes(toolUse.name)
         ) {
           const input = toolUse.input as Record<string, unknown>;
           if (input.path) changedFiles.push(input.path as string);

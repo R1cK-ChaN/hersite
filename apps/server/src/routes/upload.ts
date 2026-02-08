@@ -7,7 +7,8 @@ import { ensureDir } from "../utils/fileUtils.js";
 import { FileConverterService } from "../services/FileConverterService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const UPLOADS_DIR = path.resolve(__dirname, "../../../uploads");
+const UPLOADS_DIR =
+  process.env.UPLOADS_DIR || path.resolve(__dirname, "../../../uploads");
 
 const storage = multer.diskStorage({
   destination: async (_req, _file, cb) => {

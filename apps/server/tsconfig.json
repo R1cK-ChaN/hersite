@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "noEmit": true
+    "noEmit": false
   },
   "include": ["src"]
 }

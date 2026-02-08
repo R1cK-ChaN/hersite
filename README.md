@@ -2,23 +2,35 @@
 
 An AI-powered personal website builder for non-coders. Users interact through a chat sidebar to build and customize their Astro-based personal website, with a live preview alongside the chat. Built as a single-user local app — no auth required.
 
+## Live Deployment
+
+| Service            | URL                                        | Purpose                        |
+| ------------------ | ------------------------------------------ | ------------------------------ |
+| **Editor**         | [edit.cynthia.md](https://edit.cynthia.md) | AI-powered editor + chat agent |
+| **Published Site** | [cynthia.md](https://cynthia.md)           | Her live Astro website         |
+
+- **Editor** is hosted on Railway (Docker container with persistent volume)
+- **Published site** is hosted on Vercel (static Astro build, auto-deployed via REST API)
+- **AI agent** uses OpenRouter API (configurable model via `AI_MODEL` env var)
+
 ## Current Status
 
-**Phase 1 MVP — feature-complete, not yet runtime-tested.**
+**Phase 1 MVP — deployed to production.**
 
-All source code is written, TypeScript compiles cleanly across the entire monorepo, and the frontend Vite build produces output successfully. The end-to-end flow (wizard > chat > preview > publish) has not yet been tested at runtime because it requires an `ANTHROPIC_API_KEY` and a running dev environment.
+All source code is written, TypeScript compiles cleanly, and the app is deployed and running. The editor serves the React frontend and Express API on a single Railway service. The published website deploys to Vercel via the REST API when the user clicks "Publish".
 
 ### What's Built
 
-| Area                             | Status      | Details                                                                                                                              |
-| -------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Monorepo scaffolding             | Done        | pnpm workspaces + Turborepo, shared TS config, pre-commit hooks (husky + lint-staged + prettier)                                     |
-| Shared types (`packages/shared`) | Done        | `ChatMessage`, `FileAttachment`, `ProjectInfo`, `DeployStatus`, typed Socket.IO events                                               |
-| Astro templates (3)              | Done        | Blog, Portfolio, Blog+Portfolio — all with Valentine's pink theme, CSS custom properties, MDX content collections, responsive design |
-| Backend server (`apps/server`)   | Done        | Express + Socket.IO, 6 service modules, Claude API agent with tool-use loop, file upload, docx conversion, deploy, git               |
-| Frontend editor (`apps/editor`)  | Done        | React 19 + Vite 6, Zustand stores, 30+ components (wizard, chat, preview, publish), Tailwind CSS v4 + shadcn-style UI primitives     |
-| Wiring & integration             | Done        | Vite proxy config, Turborepo pipeline, Socket.IO event binding                                                                       |
-| Runtime testing                  | Not started | Requires `ANTHROPIC_API_KEY` to test agent flow                                                                                      |
+| Area                             | Status | Details                                                                                                                              |
+| -------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Monorepo scaffolding             | Done   | pnpm workspaces + Turborepo, shared TS config, pre-commit hooks (husky + lint-staged + prettier)                                     |
+| Shared types (`packages/shared`) | Done   | `ChatMessage`, `FileAttachment`, `ProjectInfo`, `DeployStatus`, typed Socket.IO events                                               |
+| Astro templates (3)              | Done   | Blog, Portfolio, Blog+Portfolio — all with Valentine's pink theme, CSS custom properties, MDX content collections, responsive design |
+| Backend server (`apps/server`)   | Done   | Express + Socket.IO, 7 service modules, Claude API agent with tool-use loop, file upload, docx conversion, deploy, git               |
+| Frontend editor (`apps/editor`)  | Done   | React 19 + Vite 6, Zustand stores, 30+ components (wizard, chat, preview, publish), Tailwind CSS v4 + shadcn-style UI primitives     |
+| Wiring & integration             | Done   | Vite proxy config, Turborepo pipeline, Socket.IO event binding                                                                       |
+| Docker + cloud deploy            | Done   | Dockerfile, Railway deployment with persistent volume, Vercel for published site                                                     |
+| Custom domains                   | Done   | `edit.cynthia.md` (editor), `cynthia.md` (published site)                                                                            |
 
 ## Architecture
 
@@ -190,21 +202,21 @@ To check credential status at runtime: `GET /api/health` returns `{ "status": "o
 
 ## Tech Stack
 
-| Layer              | Technology                                          |
-| ------------------ | --------------------------------------------------- |
-| Frontend framework | React 19                                            |
-| Frontend build     | Vite 6                                              |
-| Styling            | Tailwind CSS v4, shadcn-style components, Radix UI  |
-| State management   | Zustand 5                                           |
-| Real-time          | Socket.IO 4                                         |
-| Backend            | Express 4, Node.js 22                               |
-| AI                 | Claude API (@anthropic-ai/sdk) with tool-use        |
-| Site framework     | Astro 5 with MDX                                    |
-| File conversion    | mammoth (docx), turndown (HTML>MD), sharp (images)  |
-| Version control    | simple-git                                          |
-| Deployment         | Vercel REST API v13                                 |
-| Monorepo           | pnpm workspaces, Turborepo                          |
-| Code quality       | TypeScript 5 (strict), husky, lint-staged, prettier |
+| Layer              | Technology                                                          |
+| ------------------ | ------------------------------------------------------------------- |
+| Frontend framework | React 19                                                            |
+| Frontend build     | Vite 6                                                              |
+| Styling            | Tailwind CSS v4, shadcn-style components, Radix UI                  |
+| State management   | Zustand 5                                                           |
+| Real-time          | Socket.IO 4                                                         |
+| Backend            | Express 4, Node.js 22                                               |
+| AI                 | Claude API (@anthropic-ai/sdk) with tool-use, OpenRouter compatible |
+| Site framework     | Astro 5 with MDX                                                    |
+| File conversion    | mammoth (docx), turndown (HTML>MD), sharp (images)                  |
+| Version control    | simple-git                                                          |
+| Deployment         | Vercel REST API v13                                                 |
+| Monorepo           | pnpm workspaces, Turborepo                                          |
+| Code quality       | TypeScript 5 (strict), husky, lint-staged, prettier                 |
 
 ## Deployment
 
@@ -215,6 +227,8 @@ HerSite supports two modes of operation controlled by `NODE_ENV`:
 | **Development** | unset or `development` | Spawns `astro dev` child process, proxies via `/preview`           | Local development                     |
 | **Production**  | `production`           | Runs `astro build`, serves static files from `dist/` at `/preview` | Cloud hosting (Render, Railway, etc.) |
 
+In production mode, Express also serves the built React editor as a SPA with fallback routing.
+
 ### Environment Variables
 
 Create a `.env` file from the example:
@@ -223,44 +237,94 @@ Create a `.env` file from the example:
 cp .env.example .env
 ```
 
-| Variable                | Required    | Default                 | Description                                                                                 |
-| ----------------------- | ----------- | ----------------------- | ------------------------------------------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`     | No\*        | —                       | Anthropic API key. \*Not needed if authenticated via Claude Code CLI                        |
-| `VERCEL_TOKEN`          | For publish | —                       | Vercel personal access token for deployment                                                 |
-| `VERCEL_PROJECT_NAME`   | No          | `hersite`               | Vercel project name used in REST API deployments                                            |
-| `HERSITE_GIT_REMOTE`    | No          | —                       | Git remote URL for persistent project storage (e.g. a private GitHub repo)                  |
-| `HERSITE_AUTH_PASSWORD` | No          | —                       | When set, all routes require HTTP Basic auth with this password                             |
-| `EDITOR_ORIGIN`         | No          | `http://localhost:5173` | Allowed CORS origin for the frontend                                                        |
-| `VITE_SERVER_URL`       | No          | `/`                     | Socket.IO server URL for the frontend (set when server and editor are on different origins) |
-| `PORT`                  | No          | `3001`                  | Server port                                                                                 |
-| `NODE_ENV`              | No          | `development`           | Set to `production` for build-and-serve mode                                                |
+| Variable                | Required    | Default                      | Description                                                                                 |
+| ----------------------- | ----------- | ---------------------------- | ------------------------------------------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`     | No\*        | —                            | API key. Supports Anthropic keys or OpenRouter keys. \*Not needed if using Claude Code CLI  |
+| `ANTHROPIC_BASE_URL`    | No          | `https://api.anthropic.com`  | API base URL. Set to `https://openrouter.ai/api/v1` for OpenRouter                          |
+| `AI_MODEL`              | No          | `claude-sonnet-4-5-20250929` | Model ID. For OpenRouter, use `anthropic/claude-sonnet-4-5-20250929`                        |
+| `VERCEL_TOKEN`          | For publish | —                            | Vercel personal access token for deployment                                                 |
+| `VERCEL_PROJECT_NAME`   | No          | `hersite`                    | Vercel project name used in REST API deployments                                            |
+| `VERCEL_PROJECT_ID`     | No          | —                            | Vercel project ID (from `.vercel/project.json`)                                             |
+| `VERCEL_ORG_ID`         | No          | —                            | Vercel org/team ID (from `.vercel/project.json`)                                            |
+| `PROJECTS_DIR`          | No          | `./projects`                 | Directory for user project files. Set to `/data/projects` on Railway with a volume          |
+| `UPLOADS_DIR`           | No          | `./uploads`                  | Directory for uploaded files. Set to `/data/uploads` on Railway with a volume               |
+| `TEMPLATES_DIR`         | No          | `./templates`                | Directory containing Astro templates                                                        |
+| `HERSITE_GIT_REMOTE`    | No          | —                            | Git remote URL for persistent project storage (e.g. a private GitHub repo)                  |
+| `HERSITE_AUTH_PASSWORD` | No          | —                            | When set, all routes require HTTP Basic auth with this password                             |
+| `EDITOR_ORIGIN`         | No          | `http://localhost:5173`      | Allowed CORS origin for the frontend (auto-permissive in production)                        |
+| `VITE_SERVER_URL`       | No          | `/`                          | Socket.IO server URL for the frontend (set when server and editor are on different origins) |
+| `PORT`                  | No          | `3001`                       | Server port                                                                                 |
+| `NODE_ENV`              | No          | `development`                | Set to `production` for build-and-serve mode                                                |
 
-### Deploying to a Cloud Platform
+### Deploying to Railway (Current Setup)
 
-1. **Set environment variables** on your platform:
+The editor + agent server is deployed to Railway using a Dockerfile.
 
-   ```
-   NODE_ENV=production
-   ANTHROPIC_API_KEY=sk-ant-...
-   VERCEL_TOKEN=...             # if you want one-click publish
-   HERSITE_GIT_REMOTE=...       # if you want project persistence across restarts
-   HERSITE_AUTH_PASSWORD=...     # recommended for public deployments
-   ```
-
-2. **Build and start:**
+1. **Deploy from the Linux filesystem** (WSL2 note: deploy from `~/` not `/mnt/c/` to avoid file encoding issues):
 
    ```bash
-   pnpm install
-   pnpm build
-   node apps/server/dist/index.js
+   railway login
+   railway init
+   railway link
+   railway service <service-name>
    ```
 
-   The server serves both the API and the editor frontend (when built) on a single port.
+2. **Set environment variables:**
 
-3. **Preview behavior** in production:
-   - After a project is created, the server runs `astro build` and serves the static output at `/preview`
-   - When the AI agent modifies files, the server automatically rebuilds and the preview refreshes
-   - No child process management needed — all rendering is done via static file serving
+   ```bash
+   railway variables --set "NODE_ENV=production"
+   railway variables --set "PORT=3001"
+   railway variables --set "ANTHROPIC_API_KEY=sk-or-v1-..."
+   railway variables --set "ANTHROPIC_BASE_URL=https://openrouter.ai/api/v1"
+   railway variables --set "AI_MODEL=anthropic/claude-sonnet-4-5-20250929"
+   railway variables --set "PROJECTS_DIR=/data/projects"
+   railway variables --set "UPLOADS_DIR=/data/uploads"
+   railway variables --set "TEMPLATES_DIR=/app/templates"
+   railway variables --set "HERSITE_AUTH_PASSWORD=..."
+   railway variables --set "VERCEL_TOKEN=..."
+   railway variables --set "VERCEL_PROJECT_ID=..."
+   railway variables --set "VERCEL_ORG_ID=..."
+   railway variables --set "VERCEL_PROJECT_NAME=her-website"
+   ```
+
+3. **Add a persistent volume** (so project files survive redeployments):
+
+   ```bash
+   railway volume add --mount-path /data
+   ```
+
+4. **Deploy:**
+
+   ```bash
+   railway up
+   railway domain   # generate a public URL or add a custom domain
+   ```
+
+### Deploying Published Site to Vercel
+
+The published Astro website is a separate Vercel project.
+
+1. Copy a template and deploy:
+
+   ```bash
+   mkdir ~/her-website && cp -r templates/blog-portfolio/* ~/her-website/
+   cd ~/her-website && vercel --yes && vercel --prod
+   ```
+
+2. Add a custom domain:
+
+   ```bash
+   vercel domains add yourdomain.com
+   # Then add an A record pointing to 76.76.21.21 at your DNS registrar
+   ```
+
+3. The Vercel project/org IDs (needed by Railway) are in `~/her-website/.vercel/project.json`.
+
+### Production Preview Behavior
+
+- After a project is created, the server runs `astro build` and serves the static output at `/preview`
+- When the AI agent modifies files, the server automatically rebuilds and the preview refreshes
+- No child process management needed — all rendering is done via static file serving
 
 ### Persistent Storage with Git
 
@@ -306,8 +370,8 @@ For same-origin deployments (single port), no configuration is needed.
 ## Known Limitations (MVP)
 
 - **Single-user only** — one project at a time
-- **No Docker** — runs directly on the host
-- **Agent model** — hardcoded to `claude-sonnet-4-5-20250929`; can be changed in `AgentService.ts`
+- **Agent model** — configurable via `AI_MODEL` env var (defaults to `claude-sonnet-4-5-20250929`)
 - **No tests** — test suite not yet implemented
 - **Preview proxy** — in dev mode, the Astro dev server port is detected from stdout parsing, which could be fragile
 - **Upload limits** — max 10MB per file, max 5 files per request
+- **WSL2 deploy** — must deploy from the native Linux filesystem (`~/`), not from `/mnt/c/`, due to file encoding issues with the Railway CLI

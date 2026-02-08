@@ -12,8 +12,10 @@ import {
 } from "../utils/fileUtils.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECTS_DIR = path.resolve(__dirname, "../../../projects");
-const TEMPLATES_DIR = path.resolve(__dirname, "../../../templates");
+const PROJECTS_DIR =
+  process.env.PROJECTS_DIR || path.resolve(__dirname, "../../../projects");
+const TEMPLATES_DIR =
+  process.env.TEMPLATES_DIR || path.resolve(__dirname, "../../../templates");
 
 let currentProject: ProjectInfo | null = null;
 let currentProjectPath: string | null = null;
@@ -23,7 +25,7 @@ export const ProjectService = {
     templateId: TemplateId,
     name: string,
     tagline?: string,
-    profilePhotoPath?: string
+    profilePhotoPath?: string,
   ): Promise<ProjectInfo> {
     const projectId = uuid();
     const projectPath = path.join(PROJECTS_DIR, projectId);
@@ -39,10 +41,7 @@ export const ProjectService = {
     if (profilePhotoPath) {
       const publicDir = path.join(projectPath, "public/images");
       await ensureDir(publicDir);
-      await fs.copyFile(
-        profilePhotoPath,
-        path.join(publicDir, "profile.jpg")
-      );
+      await fs.copyFile(profilePhotoPath, path.join(publicDir, "profile.jpg"));
     }
 
     const project: ProjectInfo = {
@@ -62,16 +61,19 @@ export const ProjectService = {
   async personalizeSite(
     projectPath: string,
     name: string,
-    tagline: string
+    tagline: string,
   ): Promise<void> {
     // Update the index page with the user's name and tagline
     const indexPath = path.join(projectPath, "src/pages/index.astro");
     try {
       let content = await readFileContent(indexPath);
-      content = content.replace(/My Personal Site|My Blog|My Portfolio|My Site/g, name);
+      content = content.replace(
+        /My Personal Site|My Blog|My Portfolio|My Site/g,
+        name,
+      );
       content = content.replace(
         /Welcome to my.*?[.!]/s,
-        tagline || `Welcome to ${name}'s website!`
+        tagline || `Welcome to ${name}'s website!`,
       );
       await writeFileContent(indexPath, content);
     } catch {
@@ -84,7 +86,7 @@ export const ProjectService = {
       let config = await readFileContent(configPath);
       config = config.replace(
         "site: 'https://example.com'",
-        `site: 'https://example.com'`
+        `site: 'https://example.com'`,
       );
       await writeFileContent(configPath, config);
     } catch {
@@ -104,13 +106,13 @@ export const ProjectService = {
 
     const files = await listFilesRecursive(currentProjectPath);
     const pages = files.filter(
-      (f) => f.startsWith("src/pages/") && f.endsWith(".astro")
+      (f) => f.startsWith("src/pages/") && f.endsWith(".astro"),
     );
 
     let themeVariables: Record<string, string> = {};
     try {
       const themeContent = await readFileContent(
-        path.join(currentProjectPath, "src/styles/theme.css")
+        path.join(currentProjectPath, "src/styles/theme.css"),
       );
       const matches = themeContent.matchAll(/--([\w-]+):\s*([^;]+);/g);
       for (const match of matches) {

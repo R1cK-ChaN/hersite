@@ -21,6 +21,7 @@ import type {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || "3001", 10);
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const EDITOR_ORIGIN = process.env.EDITOR_ORIGIN || "http://localhost:5173";
 const AUTH_PASSWORD = process.env.HERSITE_AUTH_PASSWORD || "";
 
@@ -29,7 +30,7 @@ const httpServer = createServer(app);
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
-    origin: EDITOR_ORIGIN,
+    origin: IS_PRODUCTION ? true : EDITOR_ORIGIN,
     methods: ["GET", "POST"],
   },
   maxHttpBufferSize: 10 * 1024 * 1024, // 10MB
@@ -61,11 +62,12 @@ if (AUTH_PASSWORD) {
 }
 
 // Middleware
-app.use(cors({ origin: EDITOR_ORIGIN }));
+app.use(cors({ origin: IS_PRODUCTION ? true : EDITOR_ORIGIN }));
 app.use(express.json());
 
 // Static files for uploads
-const uploadsDir = path.resolve(__dirname, "../../uploads");
+const uploadsDir =
+  process.env.UPLOADS_DIR || path.resolve(__dirname, "../../uploads");
 app.use("/uploads", express.static(uploadsDir));
 
 // Preview proxy setup (dev mode proxy or production static serve)
@@ -90,6 +92,25 @@ io.on("connection", (socket) => {
     console.log(`Client disconnected: ${socket.id}`);
   });
 });
+
+// --- Production: serve built React editor ---
+if (IS_PRODUCTION) {
+  const editorDist = path.join(__dirname, "../../editor/dist");
+  app.use(express.static(editorDist));
+
+  // SPA fallback: non-API routes serve index.html
+  app.get("*", (req, res, next) => {
+    if (
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/socket.io") ||
+      req.path.startsWith("/preview") ||
+      req.path.startsWith("/uploads")
+    ) {
+      return next();
+    }
+    res.sendFile(path.join(editorDist, "index.html"));
+  });
+}
 
 httpServer.listen(PORT, async () => {
   console.log(`HerSite server running on http://localhost:${PORT}`);
