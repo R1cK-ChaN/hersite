@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.astro/
+*.tsbuildinfo
+.turbo/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Vercel
+.vercel/
+
+# Runtime data
+projects/
+uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Coverage & testing
+coverage/
+.nyc_output/

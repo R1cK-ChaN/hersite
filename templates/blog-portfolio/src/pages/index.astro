@@ -1,0 +1,232 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog');
+const recentPosts = allPosts
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const allProjects = await getCollection('projects');
+const featuredProjects = allProjects
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+<Layout title="Home">
+  <div class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1 class="hero-title">Welcome to My Site</h1>
+      <p class="hero-tagline">Writer, creator, and maker of things. Sharing my work and thoughts with the world.</p>
+    </section>
+
+    <!-- Recent Posts Section -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Recent Posts</h2>
+        <a href="/blog" class="view-all">View all &rarr;</a>
+      </div>
+      <div class="posts-grid">
+        {recentPosts.map((post) => (
+          <a href={`/blog/${post.id}`} class="post-card">
+            <h3 class="post-card-title">{post.data.title}</h3>
+            <time class="post-card-date" datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </time>
+            <p class="post-card-desc">{post.data.description}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- Featured Work Section -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Featured Work</h2>
+        <a href="/portfolio" class="view-all">View all &rarr;</a>
+      </div>
+      <div class="projects-grid">
+        {featuredProjects.map((project) => (
+          <a href={`/portfolio/${project.id}`} class="project-card">
+            <div class="project-card-image">
+              {project.data.image ? (
+                <img src={project.data.image} alt={project.data.title} />
+              ) : (
+                <div class="project-placeholder" />
+              )}
+            </div>
+            <div class="project-card-body">
+              <h3 class="project-card-title">{project.data.title}</h3>
+              <p class="project-card-desc">{project.data.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+  }
+
+  .hero-tagline {
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .section {
+    margin-top: 4rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header h2 {
+    margin-bottom: 0;
+  }
+
+  .view-all {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--color-primary);
+  }
+
+  .view-all:hover {
+    text-decoration: underline;
+  }
+
+  /* Blog Post Cards */
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .post-card {
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(233, 30, 140, 0.1);
+    text-decoration: none;
+  }
+
+  .post-card-title {
+    font-size: 1.15rem;
+    color: var(--color-text);
+    margin-bottom: 0.35rem;
+  }
+
+  .post-card-date {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .post-card-desc {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Project Cards */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .project-card {
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(233, 30, 140, 0.1);
+    text-decoration: none;
+  }
+
+  .project-card-image img,
+  .project-placeholder {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 0;
+  }
+
+  .project-placeholder {
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+  }
+
+  .project-card-body {
+    padding: 1.25rem;
+  }
+
+  .project-card-title {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    margin-bottom: 0.35rem;
+  }
+
+  .project-card-desc {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.25rem;
+    }
+
+    .posts-grid,
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+</style>

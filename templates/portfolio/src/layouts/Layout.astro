@@ -1,0 +1,160 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'My creative portfolio - built with HerSite' } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container nav">
+        <a href="/" class="nav-logo">
+          <span class="logo-icon" aria-hidden="true">&hearts;</span>
+          <span class="logo-text">Portfolio</span>
+        </a>
+        <ul class="nav-links">
+          <li>
+            <a href="/" class:list={[{ active: currentPath === '/' }]}>Home</a>
+          </li>
+          <li>
+            <a
+              href="/portfolio/"
+              class:list={[{ active: currentPath.startsWith('/portfolio') }]}
+            >
+              Portfolio
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="site-main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          Made with <span class="heart" aria-label="love">&hearts;</span> using
+          <a href="https://hersite.io">HerSite</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  @import '../styles/theme.css';
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: rgba(255, 251, 254, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .nav-logo:hover {
+    color: var(--color-primary);
+  }
+
+  .logo-icon {
+    font-size: 1.4rem;
+    color: var(--color-primary);
+  }
+
+  .nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    padding: 0;
+    margin: 0;
+  }
+
+  .nav-links a {
+    color: var(--color-text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-decoration: none;
+    padding: 0.25rem 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .nav-links a:hover,
+  .nav-links a.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
+
+  .site-main {
+    flex: 1;
+  }
+
+  .site-footer {
+    margin-top: 4rem;
+    padding: 2rem 0;
+    text-align: center;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .site-footer a {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+
+  .heart {
+    color: var(--color-primary);
+    display: inline-block;
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  @media (max-width: 480px) {
+    .nav-links {
+      gap: 1.25rem;
+    }
+  }
+</style>

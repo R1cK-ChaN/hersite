@@ -1,0 +1,25 @@
+{
+  "name": "hersite",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "npx tsc --noEmit --skipLibCheck"
+    ],
+    "*.{ts,tsx,js,jsx,json,css,md,mdx}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "turbo": "^2.3.0"
+  }
+}

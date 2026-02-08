@@ -1,0 +1,131 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Layout title="All Posts - My Blog" description="Browse all blog posts">
+  <section class="page-header">
+    <h1>All Posts</h1>
+    <p class="text-muted">Everything I've written, newest first.</p>
+  </section>
+
+  <ul class="post-list">
+    {
+      posts.map((post) => (
+        <li class="post-card">
+          <a href={`/blog/${post.id}`} class="post-link">
+            <div class="post-meta">
+              <time datetime={post.data.pubDate.toISOString()}>
+                {post.data.pubDate.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </time>
+              {post.data.tags && (
+                <div class="post-tags">
+                  {post.data.tags.map((tag) => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <h2 class="post-title">{post.data.title}</h2>
+            <p class="post-description">{post.data.description}</p>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>
+
+<style>
+  .page-header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    margin-bottom: 0.25rem;
+  }
+
+  .page-header p {
+    margin-bottom: 0;
+  }
+
+  .post-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .post-link {
+    display: block;
+    padding: 1.5rem;
+    text-decoration: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .post-link:hover {
+    border-color: var(--color-primary-light);
+    box-shadow: 0 2px 12px rgba(233, 30, 140, 0.08);
+    text-decoration: none;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+  }
+
+  .post-meta time {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .post-tags {
+    display: flex;
+    gap: 0.375rem;
+  }
+
+  .tag {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    background-color: rgba(233, 30, 140, 0.08);
+    color: var(--color-primary);
+  }
+
+  .post-title {
+    font-size: 1.25rem;
+    color: var(--color-text);
+    margin-top: 0;
+    margin-bottom: 0.35rem;
+  }
+
+  .post-link:hover .post-title {
+    color: var(--color-primary);
+  }
+
+  .post-description {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+    line-height: 1.5;
+  }
+</style>

@@ -1,0 +1,386 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const allProjects = await getCollection('projects');
+const featuredProjects = allProjects
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 6);
+---
+
+<Layout title="My Portfolio - HerSite">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <p class="hero-greeting">Hello, I'm</p>
+        <h1 class="hero-name">Your Name</h1>
+        <p class="hero-tagline">
+          A creative designer & developer crafting beautiful digital experiences.
+        </p>
+        <div class="hero-actions">
+          <a href="/portfolio/" class="btn btn-primary">View My Work</a>
+        </div>
+      </div>
+      <div class="hero-decoration" aria-hidden="true">
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
+        <div class="decoration-circle circle-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Projects Section -->
+  <section class="featured-section">
+    <div class="container">
+      <h2 class="section-title">Featured Projects</h2>
+      <p class="section-subtitle text-muted">A selection of my recent creative work</p>
+
+      <div class="projects-grid">
+        {featuredProjects.map((project) => (
+          <a href={`/portfolio/${project.id}/`} class="project-card">
+            <div class="card-image">
+              {project.data.image ? (
+                <img src={project.data.image} alt={project.data.title} loading="lazy" />
+              ) : (
+                <div class="image-placeholder">
+                  <span class="placeholder-emoji">&#x1F3A8;</span>
+                </div>
+              )}
+              <div class="card-overlay">
+                <span class="view-label">View Project</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">{project.data.title}</h3>
+              <p class="card-description">{project.data.description}</p>
+              {project.data.tags && (
+                <div class="card-tags">
+                  {project.data.tags.map((tag: string) => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+
+      {allProjects.length > 6 && (
+        <div class="section-cta">
+          <a href="/portfolio/" class="btn btn-outline">View All Projects</a>
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* ========== Hero ========== */
+
+  .hero {
+    position: relative;
+    padding: 6rem 0 4rem;
+    overflow: hidden;
+  }
+
+  .hero .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-content {
+    max-width: 640px;
+  }
+
+  .hero-greeting {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.025em;
+  }
+
+  .hero-name {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-tagline {
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 480px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-decoration {
+    position: absolute;
+    top: 0;
+    right: -5%;
+    width: 400px;
+    height: 400px;
+    pointer-events: none;
+  }
+
+  .decoration-circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.12;
+  }
+
+  .circle-1 {
+    width: 300px;
+    height: 300px;
+    background: var(--color-primary);
+    top: 0;
+    right: 0;
+  }
+
+  .circle-2 {
+    width: 200px;
+    height: 200px;
+    background: var(--color-primary-light);
+    top: 120px;
+    right: 140px;
+  }
+
+  .circle-3 {
+    width: 120px;
+    height: 120px;
+    background: var(--color-primary);
+    top: 40px;
+    right: 260px;
+  }
+
+  /* ========== Buttons ========== */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    transition: all 0.25s ease;
+    text-decoration: none;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    color: #ffffff;
+    border-color: transparent;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(233, 30, 140, 0.3);
+    color: #ffffff;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .btn-outline:hover {
+    background: var(--color-primary);
+    color: #ffffff;
+    transform: translateY(-2px);
+  }
+
+  /* ========== Featured Section ========== */
+
+  .featured-section {
+    padding: 3rem 0 4rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-subtitle {
+    text-align: center;
+    font-size: 1.05rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .section-cta {
+    text-align: center;
+    margin-top: 2.5rem;
+  }
+
+  /* ========== Projects Grid ========== */
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.75rem;
+  }
+
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .project-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(233, 30, 140, 0.12);
+    color: inherit;
+  }
+
+  .card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+    transition: transform 0.4s ease;
+  }
+
+  .project-card:hover .card-image img {
+    transform: scale(1.05);
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .placeholder-emoji {
+    font-size: 3rem;
+    filter: grayscale(0) brightness(1.2);
+  }
+
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(233, 30, 140, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .project-card:hover .card-overlay {
+    opacity: 1;
+  }
+
+  .view-label {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.5rem 1.25rem;
+    border: 2px solid #ffffff;
+    border-radius: var(--radius);
+  }
+
+  .card-body {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--color-text);
+  }
+
+  .card-description {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+    flex: 1;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.2rem 0.6rem;
+    border-radius: 100px;
+    background: rgba(233, 30, 140, 0.08);
+    color: var(--color-primary);
+  }
+
+  /* ========== Responsive ========== */
+
+  @media (max-width: 900px) {
+    .projects-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 4rem 0 3rem;
+    }
+
+    .hero-name {
+      font-size: 2.5rem;
+    }
+
+    .hero-tagline {
+      font-size: 1.05rem;
+    }
+
+    .hero-decoration {
+      display: none;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-name {
+      font-size: 2.2rem;
+    }
+  }
+</style>

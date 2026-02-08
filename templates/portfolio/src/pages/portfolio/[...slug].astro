@@ -1,0 +1,350 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { title, description, date, image, tags, link } = entry.data;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Layout title={`${title} - Portfolio`} description={description}>
+  <article class="project-page">
+    <div class="container">
+      <a href="/portfolio/" class="back-link">&larr; Back to Portfolio</a>
+
+      <header class="project-header">
+        <h1 class="project-title">{title}</h1>
+        <p class="project-description">{description}</p>
+        <div class="project-meta">
+          <time class="project-date" datetime={date.toISOString()}>
+            {formattedDate}
+          </time>
+          {tags && tags.length > 0 && (
+            <div class="project-tags">
+              {tags.map((tag) => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          )}
+        </div>
+        {link && (
+          <a href={link} target="_blank" rel="noopener noreferrer" class="project-link">
+            View Live Project &rarr;
+          </a>
+        )}
+      </header>
+
+      {image && (
+        <div class="project-image-wrapper">
+          <a href="#lightbox" class="image-trigger">
+            <img src={image} alt={title} class="project-image" />
+            <span class="zoom-hint" aria-hidden="true">Click to enlarge</span>
+          </a>
+        </div>
+      )}
+
+      <!-- CSS-only lightbox using :target -->
+      <div id="lightbox" class="lightbox">
+        <a href="#_" class="lightbox-close" aria-label="Close lightbox">
+          <span aria-hidden="true">&times;</span>
+        </a>
+        <div class="lightbox-content">
+          <img src={image} alt={title} />
+        </div>
+      </div>
+
+      <div class="project-content prose">
+        <Content />
+      </div>
+
+      <footer class="project-footer">
+        <a href="/portfolio/" class="back-link">&larr; Back to Portfolio</a>
+      </footer>
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .project-page {
+    padding: 2rem 0 4rem;
+  }
+
+  /* ========== Back Link ========== */
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--color-primary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease, gap 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--color-primary-light);
+    gap: 0.5rem;
+  }
+
+  /* ========== Project Header ========== */
+
+  .project-header {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .project-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .project-description {
+    font-size: 1.15rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    max-width: 700px;
+  }
+
+  .project-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .project-date {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    background: rgba(233, 30, 140, 0.08);
+    color: var(--color-primary);
+  }
+
+  .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.5rem 1.25rem;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .project-link:hover {
+    background: var(--color-primary);
+    color: #ffffff;
+  }
+
+  /* ========== Project Image ========== */
+
+  .project-image-wrapper {
+    margin-bottom: 2.5rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+
+  .image-trigger {
+    display: block;
+    position: relative;
+    cursor: zoom-in;
+  }
+
+  .project-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 0;
+    transition: transform 0.4s ease;
+  }
+
+  .image-trigger:hover .project-image {
+    transform: scale(1.02);
+  }
+
+  .zoom-hint {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .image-trigger:hover .zoom-hint {
+    opacity: 1;
+  }
+
+  /* ========== CSS-only Lightbox ========== */
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .lightbox:target {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    color: #ffffff;
+    font-size: 2.5rem;
+    text-decoration: none;
+    line-height: 1;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+    z-index: 1001;
+  }
+
+  .lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
+
+  .lightbox-content {
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox-content img {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  /* ========== Project Content (Prose) ========== */
+
+  .prose {
+    max-width: 750px;
+    font-size: 1.05rem;
+    line-height: 1.75;
+  }
+
+  .prose :global(h2) {
+    font-size: 1.6rem;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .prose :global(h3) {
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .prose :global(p) {
+    margin-bottom: 1.25em;
+  }
+
+  .prose :global(img) {
+    margin: 2em 0;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin-bottom: 1.25em;
+    padding-left: 1.5em;
+  }
+
+  .prose :global(li) {
+    margin-bottom: 0.4em;
+  }
+
+  /* ========== Project Footer ========== */
+
+  .project-footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* ========== Responsive ========== */
+
+  @media (max-width: 768px) {
+    .project-title {
+      font-size: 2rem;
+    }
+
+    .project-description {
+      font-size: 1.05rem;
+    }
+
+    .lightbox-close {
+      top: 0.75rem;
+      right: 0.75rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .project-title {
+      font-size: 1.75rem;
+    }
+  }
+</style>

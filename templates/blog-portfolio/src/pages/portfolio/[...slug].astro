@@ -1,0 +1,169 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Layout title={entry.data.title}>
+  <div class="container">
+    <article class="project">
+      <a href="/portfolio" class="back-link">&larr; Back to Portfolio</a>
+
+      {entry.data.image && (
+        <div class="project-hero">
+          <img src={entry.data.image} alt={entry.data.title} />
+        </div>
+      )}
+
+      <header class="project-header">
+        <h1>{entry.data.title}</h1>
+        <time datetime={entry.data.date.toISOString()}>
+          {entry.data.date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </time>
+        {entry.data.tags && (
+          <div class="project-tags">
+            {entry.data.tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )}
+        {entry.data.link && (
+          <a href={entry.data.link} class="project-link" target="_blank" rel="noopener noreferrer">
+            View Live Project &rarr;
+          </a>
+        )}
+      </header>
+
+      <div class="project-content">
+        <Content />
+      </div>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .project {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--color-primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    text-decoration: none;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  .project-hero {
+    margin-bottom: 2rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .project-hero img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 0;
+  }
+
+  .project-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .project-header h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .project-header time {
+    display: block;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .tag {
+    display: inline-block;
+    background-color: var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+
+  .project-link {
+    display: inline-block;
+    background-color: var(--color-primary);
+    color: #ffffff;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+
+  .project-link:hover {
+    background-color: var(--color-primary-light);
+    text-decoration: none;
+    color: #ffffff;
+  }
+
+  .project-content {
+    line-height: 1.8;
+  }
+
+  .project-content :global(h1),
+  .project-content :global(h2),
+  .project-content :global(h3),
+  .project-content :global(h4) {
+    margin-top: 2rem;
+  }
+
+  .project-content :global(p) {
+    margin-bottom: 1.25rem;
+  }
+
+  .project-content :global(img) {
+    margin: 1.5rem 0;
+    border-radius: var(--radius);
+  }
+
+  .project-content :global(a) {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  .project-content :global(a:hover) {
+    color: var(--color-primary-light);
+  }
+</style>

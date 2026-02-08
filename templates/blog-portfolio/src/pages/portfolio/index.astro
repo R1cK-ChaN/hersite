@@ -1,0 +1,146 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const allProjects = await getCollection('projects');
+const projects = allProjects.sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<Layout title="Portfolio">
+  <div class="container">
+    <header class="page-header">
+      <h1>Portfolio</h1>
+      <p class="page-desc">A collection of my work and creative projects.</p>
+    </header>
+
+    <div class="projects-grid">
+      {projects.map((project) => (
+        <a href={`/portfolio/${project.id}`} class="project-card">
+          <div class="project-card-image">
+            {project.data.image ? (
+              <img src={project.data.image} alt={project.data.title} />
+            ) : (
+              <div class="project-placeholder" />
+            )}
+          </div>
+          <div class="project-card-body">
+            <h2 class="project-card-title">{project.data.title}</h2>
+            <time class="project-card-date" datetime={project.data.date.toISOString()}>
+              {project.data.date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </time>
+            <p class="project-card-desc">{project.data.description}</p>
+            {project.data.tags && (
+              <div class="project-card-tags">
+                {project.data.tags.map((tag) => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .page-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .page-header h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .page-desc {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.75rem;
+  }
+
+  .project-card {
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(233, 30, 140, 0.1);
+    text-decoration: none;
+  }
+
+  .project-card-image img,
+  .project-placeholder {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 0;
+  }
+
+  .project-placeholder {
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+  }
+
+  .project-card-body {
+    padding: 1.25rem;
+  }
+
+  .project-card-title {
+    font-size: 1.15rem;
+    color: var(--color-text);
+    margin-bottom: 0.25rem;
+  }
+
+  .project-card-date {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .project-card-desc {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+
+  .project-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    display: inline-block;
+    background-color: var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
