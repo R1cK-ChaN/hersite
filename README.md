@@ -10,15 +10,15 @@ All source code is written, TypeScript compiles cleanly across the entire monore
 
 ### What's Built
 
-| Area | Status | Details |
-|------|--------|---------|
-| Monorepo scaffolding | Done | pnpm workspaces + Turborepo, shared TS config, pre-commit hooks (husky + lint-staged + prettier) |
-| Shared types (`packages/shared`) | Done | `ChatMessage`, `FileAttachment`, `ProjectInfo`, `DeployStatus`, typed Socket.IO events |
-| Astro templates (3) | Done | Blog, Portfolio, Blog+Portfolio — all with Valentine's pink theme, CSS custom properties, MDX content collections, responsive design |
-| Backend server (`apps/server`) | Done | Express + Socket.IO, 6 service modules, Claude API agent with tool-use loop, file upload, docx conversion, deploy, git |
-| Frontend editor (`apps/editor`) | Done | React 19 + Vite 6, Zustand stores, 30+ components (wizard, chat, preview, publish), Tailwind CSS v4 + shadcn-style UI primitives |
-| Wiring & integration | Done | Vite proxy config, Turborepo pipeline, Socket.IO event binding |
-| Runtime testing | Not started | Requires `ANTHROPIC_API_KEY` to test agent flow |
+| Area                             | Status      | Details                                                                                                                              |
+| -------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Monorepo scaffolding             | Done        | pnpm workspaces + Turborepo, shared TS config, pre-commit hooks (husky + lint-staged + prettier)                                     |
+| Shared types (`packages/shared`) | Done        | `ChatMessage`, `FileAttachment`, `ProjectInfo`, `DeployStatus`, typed Socket.IO events                                               |
+| Astro templates (3)              | Done        | Blog, Portfolio, Blog+Portfolio — all with Valentine's pink theme, CSS custom properties, MDX content collections, responsive design |
+| Backend server (`apps/server`)   | Done        | Express + Socket.IO, 6 service modules, Claude API agent with tool-use loop, file upload, docx conversion, deploy, git               |
+| Frontend editor (`apps/editor`)  | Done        | React 19 + Vite 6, Zustand stores, 30+ components (wizard, chat, preview, publish), Tailwind CSS v4 + shadcn-style UI primitives     |
+| Wiring & integration             | Done        | Vite proxy config, Turborepo pipeline, Socket.IO event binding                                                                       |
+| Runtime testing                  | Not started | Requires `ANTHROPIC_API_KEY` to test agent flow                                                                                      |
 
 ## Architecture
 
@@ -47,6 +47,7 @@ hersite/
 - **sonner** for toast notifications
 
 Key UI flows:
+
 - **Setup Wizard** — Welcome > Template Selection (3 templates) > Profile Setup (name/tagline) > Site Generation
 - **Chat Sidebar** — Message list with streaming support, file attachment chips, markdown rendering
 - **Preview Panel** — iframe showing the Astro dev server output, desktop/mobile device toggle
@@ -60,48 +61,50 @@ Key UI flows:
 
 #### Services
 
-| Service | File | Purpose |
-|---------|------|---------|
-| **ProjectService** | `services/ProjectService.ts` | Scaffolds new projects by copying Astro templates, personalizes site content, manages project file read/write with path traversal protection |
-| **BuildService** | `services/BuildService.ts` | Spawns and manages the Astro dev server as a child process, proxies preview requests, handles `astro build` for production |
-| **AgentService** | `services/agent/AgentService.ts` | Orchestrates Claude API calls with an agentic tool-use loop — sends user messages, executes tool calls (file operations, theme updates, blog post creation), streams responses back |
-| **FileConverterService** | `services/FileConverterService.ts` | Converts `.docx` files to MDX blog posts using mammoth (docx > HTML), turndown (HTML > Markdown), and sharp (image optimization to WebP) |
-| **DeployService** | `services/DeployService.ts` | Runs `astro build` then `vercel deploy --prod` via child process, parses the deployment URL from stdout |
-| **GitService** | `services/GitService.ts` | Git operations via simple-git — init, commit, history, revert for undo support |
+| Service                  | File                               | Purpose                                                                                                                                                                             |
+| ------------------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ProjectService**       | `services/ProjectService.ts`       | Scaffolds new projects by copying Astro templates, personalizes site content, manages project file read/write with path traversal protection                                        |
+| **BuildService**         | `services/BuildService.ts`         | Two-mode preview: spawns Astro dev server locally, or builds and serves static files in production. Proxies preview requests via `/preview` route                                   |
+| **AgentService**         | `services/agent/AgentService.ts`   | Orchestrates Claude API calls with an agentic tool-use loop — sends user messages, executes tool calls (file operations, theme updates, blog post creation), streams responses back |
+| **FileConverterService** | `services/FileConverterService.ts` | Converts `.docx` files to MDX blog posts using mammoth (docx > HTML), turndown (HTML > Markdown), and sharp (image optimization to WebP)                                            |
+| **DeployService**        | `services/DeployService.ts`        | Deploys via Vercel REST API v13 — builds the project, uploads files as base64, returns the deployment URL                                                                           |
+| **GitService**           | `services/GitService.ts`           | Git operations via simple-git — init, commit, history, revert. Optional remote repo for persistent storage (`HERSITE_GIT_REMOTE`)                                                   |
+| **CredentialService**    | `services/CredentialService.ts`    | Resolves API credentials: env var first, then Claude Code OAuth token from `~/.claude/.credentials.json`                                                                            |
 
 #### Agent Tools
 
 The Claude agent has access to 8 tools for modifying the user's Astro site:
 
-| Tool | Description |
-|------|-------------|
-| `readFile(path)` | Read a project file's contents |
-| `writeFile(path, content)` | Create or overwrite a file |
-| `modifyFile(path, search, replace)` | Find-and-replace within a file |
-| `listFiles()` | List all project files |
-| `createBlogPost(title, content, description, tags?)` | Create an MDX blog post with frontmatter |
-| `createPage(slug, title, content)` | Create a new Astro page and add it to navigation |
-| `updateTheme(variables)` | Update CSS custom properties in theme.css |
-| `deleteFile(path)` | Remove a file from the project |
+| Tool                                                 | Description                                      |
+| ---------------------------------------------------- | ------------------------------------------------ |
+| `readFile(path)`                                     | Read a project file's contents                   |
+| `writeFile(path, content)`                           | Create or overwrite a file                       |
+| `modifyFile(path, search, replace)`                  | Find-and-replace within a file                   |
+| `listFiles()`                                        | List all project files                           |
+| `createBlogPost(title, content, description, tags?)` | Create an MDX blog post with frontmatter         |
+| `createPage(slug, title, content)`                   | Create a new Astro page and add it to navigation |
+| `updateTheme(variables)`                             | Update CSS custom properties in theme.css        |
+| `deleteFile(path)`                                   | Remove a file from the project                   |
 
 #### Socket Events
 
-| Direction | Event | Purpose |
-|-----------|-------|---------|
-| Client > Server | `chat:message` | Send a user message (with optional file attachment IDs) |
-| Client > Server | `project:create` | Create a new project from a template |
-| Client > Server | `publish:confirm` | Trigger build + deploy to Vercel |
-| Server > Client | `agent:message` | Complete agent response |
-| Server > Client | `agent:typing` | Agent thinking indicator |
-| Server > Client | `agent:stream` | Streamed response chunks |
-| Server > Client | `agent:error` | Error message |
-| Server > Client | `preview:update` | Files changed, refresh preview |
-| Server > Client | `deploy:status` | Deploy progress (idle/deploying/deployed/failed) |
-| Server > Client | `project:created` | Project scaffolding complete |
+| Direction       | Event             | Purpose                                                 |
+| --------------- | ----------------- | ------------------------------------------------------- |
+| Client > Server | `chat:message`    | Send a user message (with optional file attachment IDs) |
+| Client > Server | `project:create`  | Create a new project from a template                    |
+| Client > Server | `publish:confirm` | Trigger build + deploy to Vercel                        |
+| Server > Client | `agent:message`   | Complete agent response                                 |
+| Server > Client | `agent:typing`    | Agent thinking indicator                                |
+| Server > Client | `agent:stream`    | Streamed response chunks                                |
+| Server > Client | `agent:error`     | Error message                                           |
+| Server > Client | `preview:update`  | Files changed, refresh preview                          |
+| Server > Client | `deploy:status`   | Deploy progress (idle/deploying/deployed/failed)        |
+| Server > Client | `project:created` | Project scaffolding complete                            |
 
 ### Templates
 
 All three templates share:
+
 - **CSS custom properties** for theming (`--color-primary`, `--color-bg`, `--font-body`, etc.)
 - **Astro v5 content layer API** with glob loader for MDX content collections
 - **Layout.astro** with responsive nav, footer ("Built with HerSite")
@@ -111,18 +114,21 @@ All three templates share:
 - **No Tailwind** — pure CSS with custom properties so the agent can easily modify styles
 
 #### Blog Template
+
 - Home page with recent posts list
 - Blog listing page with date/tag display
 - Individual post page with rendered MDX
 - 2 sample blog posts
 
 #### Portfolio Template
+
 - Home page with responsive CSS grid (3/2/1 columns)
 - Portfolio listing with project cards (hover effects, image zoom)
 - Individual project page with CSS-only lightbox
 - 3 sample projects with placeholder SVG images
 
 #### Blog + Portfolio Template
+
 - Combined home page with "Recent Posts" and "Featured Work" sections
 - Full blog section (listing + individual posts)
 - Full portfolio section (grid + individual projects)
@@ -146,6 +152,7 @@ pnpm dev
 ```
 
 This starts:
+
 - **Editor** at `http://localhost:5173` (Vite dev server)
 - **Server** at `http://localhost:3001` (Express + Socket.IO)
 
@@ -155,14 +162,15 @@ The Vite dev server proxies `/api`, `/socket.io`, and `/preview` requests to the
 
 The agent needs access to the Anthropic API. Credentials are resolved in this order:
 
-| Priority | Source | How to set up |
-|----------|--------|---------------|
-| 1 | `ANTHROPIC_API_KEY` env var | Add to `.env` file: `ANTHROPIC_API_KEY=sk-ant-...` |
-| 2 | Claude Code OAuth token | Run `claude login` — the server reads `~/.claude/.credentials.json` automatically |
+| Priority | Source                      | How to set up                                                                     |
+| -------- | --------------------------- | --------------------------------------------------------------------------------- |
+| 1        | `ANTHROPIC_API_KEY` env var | Add to `.env` file: `ANTHROPIC_API_KEY=sk-ant-...`                                |
+| 2        | Claude Code OAuth token     | Run `claude login` — the server reads `~/.claude/.credentials.json` automatically |
 
 If you have Claude Code installed and authenticated, **no extra setup is needed** — the server will use your existing Claude Code session token. The token is read from `~/.claude/.credentials.json`, validated for expiry and the `user:inference` scope, and cached with automatic re-reads every 30 seconds.
 
 The server logs which credential source it's using on startup:
+
 ```
 HerSite server running on http://localhost:3001
 Using Claude Code OAuth token for AI agent
@@ -182,28 +190,124 @@ To check credential status at runtime: `GET /api/health` returns `{ "status": "o
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend framework | React 19 |
-| Frontend build | Vite 6 |
-| Styling | Tailwind CSS v4, shadcn-style components, Radix UI |
-| State management | Zustand 5 |
-| Real-time | Socket.IO 4 |
-| Backend | Express 4, Node.js 22 |
-| AI | Claude API (@anthropic-ai/sdk) with tool-use |
-| Site framework | Astro 5 with MDX |
-| File conversion | mammoth (docx), turndown (HTML>MD), sharp (images) |
-| Version control | simple-git |
-| Deployment | Vercel CLI |
-| Monorepo | pnpm workspaces, Turborepo |
-| Code quality | TypeScript 5 (strict), husky, lint-staged, prettier |
+| Layer              | Technology                                          |
+| ------------------ | --------------------------------------------------- |
+| Frontend framework | React 19                                            |
+| Frontend build     | Vite 6                                              |
+| Styling            | Tailwind CSS v4, shadcn-style components, Radix UI  |
+| State management   | Zustand 5                                           |
+| Real-time          | Socket.IO 4                                         |
+| Backend            | Express 4, Node.js 22                               |
+| AI                 | Claude API (@anthropic-ai/sdk) with tool-use        |
+| Site framework     | Astro 5 with MDX                                    |
+| File conversion    | mammoth (docx), turndown (HTML>MD), sharp (images)  |
+| Version control    | simple-git                                          |
+| Deployment         | Vercel REST API v13                                 |
+| Monorepo           | pnpm workspaces, Turborepo                          |
+| Code quality       | TypeScript 5 (strict), husky, lint-staged, prettier |
+
+## Deployment
+
+HerSite supports two modes of operation controlled by `NODE_ENV`:
+
+| Mode            | `NODE_ENV`             | Preview strategy                                                   | Use case                              |
+| --------------- | ---------------------- | ------------------------------------------------------------------ | ------------------------------------- |
+| **Development** | unset or `development` | Spawns `astro dev` child process, proxies via `/preview`           | Local development                     |
+| **Production**  | `production`           | Runs `astro build`, serves static files from `dist/` at `/preview` | Cloud hosting (Render, Railway, etc.) |
+
+### Environment Variables
+
+Create a `.env` file from the example:
+
+```bash
+cp .env.example .env
+```
+
+| Variable                | Required    | Default                 | Description                                                                                 |
+| ----------------------- | ----------- | ----------------------- | ------------------------------------------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`     | No\*        | —                       | Anthropic API key. \*Not needed if authenticated via Claude Code CLI                        |
+| `VERCEL_TOKEN`          | For publish | —                       | Vercel personal access token for deployment                                                 |
+| `VERCEL_PROJECT_NAME`   | No          | `hersite`               | Vercel project name used in REST API deployments                                            |
+| `HERSITE_GIT_REMOTE`    | No          | —                       | Git remote URL for persistent project storage (e.g. a private GitHub repo)                  |
+| `HERSITE_AUTH_PASSWORD` | No          | —                       | When set, all routes require HTTP Basic auth with this password                             |
+| `EDITOR_ORIGIN`         | No          | `http://localhost:5173` | Allowed CORS origin for the frontend                                                        |
+| `VITE_SERVER_URL`       | No          | `/`                     | Socket.IO server URL for the frontend (set when server and editor are on different origins) |
+| `PORT`                  | No          | `3001`                  | Server port                                                                                 |
+| `NODE_ENV`              | No          | `development`           | Set to `production` for build-and-serve mode                                                |
+
+### Deploying to a Cloud Platform
+
+1. **Set environment variables** on your platform:
+
+   ```
+   NODE_ENV=production
+   ANTHROPIC_API_KEY=sk-ant-...
+   VERCEL_TOKEN=...             # if you want one-click publish
+   HERSITE_GIT_REMOTE=...       # if you want project persistence across restarts
+   HERSITE_AUTH_PASSWORD=...     # recommended for public deployments
+   ```
+
+2. **Build and start:**
+
+   ```bash
+   pnpm install
+   pnpm build
+   node apps/server/dist/index.js
+   ```
+
+   The server serves both the API and the editor frontend (when built) on a single port.
+
+3. **Preview behavior** in production:
+   - After a project is created, the server runs `astro build` and serves the static output at `/preview`
+   - When the AI agent modifies files, the server automatically rebuilds and the preview refreshes
+   - No child process management needed — all rendering is done via static file serving
+
+### Persistent Storage with Git
+
+By default, project files only exist on the server's filesystem. If the server restarts (common on free-tier cloud platforms), the project is lost.
+
+Setting `HERSITE_GIT_REMOTE` enables Git-based persistence:
+
+- On project creation, the repo is initialized and the remote is added
+- Every file change is committed **and pushed** to the remote
+- On server restart, the project can be restored by cloning from the remote
+
+Example: create a private GitHub repo and set `HERSITE_GIT_REMOTE=https://<token>@github.com/you/hersite-data.git`.
+
+### Publishing to Vercel
+
+The publish flow uses the **Vercel REST API v13** (no CLI required):
+
+1. User clicks **Publish** in the editor
+2. Server builds the Astro project (`astro build`)
+3. All files in `dist/` are base64-encoded and uploaded via `POST /v13/deployments`
+4. The deployment URL is returned and shown in the status bar
+
+Requirements:
+
+- `VERCEL_TOKEN` — generate at [vercel.com/account/tokens](https://vercel.com/account/tokens)
+- `VERCEL_PROJECT_NAME` (optional) — defaults to `hersite`
+
+### Basic Authentication
+
+Set `HERSITE_AUTH_PASSWORD` to enable HTTP Basic auth on all routes (except `/api/health`). The username can be anything — only the password is checked.
+
+This is recommended for any public deployment to prevent unauthorized access.
+
+### Cross-Origin Setup
+
+When the editor and server run on different origins (e.g. editor on a CDN, server on a different host):
+
+1. Set `EDITOR_ORIGIN` on the server to the editor's URL (for CORS)
+2. Set `VITE_SERVER_URL` at editor build time to the server's full URL (for Socket.IO)
+
+For same-origin deployments (single port), no configuration is needed.
 
 ## Known Limitations (MVP)
 
-- **Single-user only** — one project at a time, no authentication
-- **No persistent storage** — project state lives in memory; restarting the server loses the current session (files on disk persist)
+- **Single-user only** — one project at a time
 - **No Docker** — runs directly on the host
 - **Agent model** — hardcoded to `claude-sonnet-4-5-20250929`; can be changed in `AgentService.ts`
 - **No tests** — test suite not yet implemented
-- **Preview proxy** — the Astro dev server port is detected from stdout parsing, which could be fragile
-- **Deploy requires Vercel CLI** — must be authenticated via `VERCEL_TOKEN` or `vercel login`
+- **Preview proxy** — in dev mode, the Astro dev server port is detected from stdout parsing, which could be fragile
+- **Upload limits** — max 10MB per file, max 5 files per request
