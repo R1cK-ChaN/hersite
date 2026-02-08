@@ -25,6 +25,9 @@ uploads/
 Thumbs.db
 Desktop.ini
 
+# Claude Code
+.claude/
+
 # Editor / IDE
 .vscode/
 .idea/
