@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { uploadRouter } from "./routes/upload.js";
 import { projectRouter } from "./routes/project.js";
 import { registerSocketHandlers } from "./socket/handlers.js";
+import { CredentialService } from "./services/CredentialService.js";
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -40,9 +41,10 @@ app.use("/uploads", express.static(uploadsDir));
 app.use("/api/upload", uploadRouter);
 app.use("/api/project", projectRouter);
 
-// Health check
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
+// Health check + credential status
+app.get("/api/health", async (_req, res) => {
+  const credentialSource = await CredentialService.getCredentialSource();
+  res.json({ status: "ok", credentialSource });
 });
 
 // Socket.IO handlers
@@ -55,8 +57,19 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, async () => {
   console.log(`HerSite server running on http://localhost:${PORT}`);
+
+  const source = await CredentialService.getCredentialSource();
+  if (source === "claude-code") {
+    console.log("Using Claude Code OAuth token for AI agent");
+  } else if (source === "env") {
+    console.log("Using ANTHROPIC_API_KEY from environment");
+  } else {
+    console.warn(
+      "No API credentials found. Set ANTHROPIC_API_KEY or run 'claude login'."
+    );
+  }
 });
 
 export { io };

@@ -141,12 +141,6 @@ All three templates share:
 # Install dependencies
 pnpm install
 
-# Copy environment file and add your API key
-cp .env.example .env
-# Edit .env and add:
-#   ANTHROPIC_API_KEY=sk-ant-...
-#   VERCEL_TOKEN=...        (optional, for deploy)
-
 # Start development
 pnpm dev
 ```
@@ -156,6 +150,25 @@ This starts:
 - **Server** at `http://localhost:3001` (Express + Socket.IO)
 
 The Vite dev server proxies `/api`, `/socket.io`, and `/preview` requests to the backend server.
+
+### API Credentials
+
+The agent needs access to the Anthropic API. Credentials are resolved in this order:
+
+| Priority | Source | How to set up |
+|----------|--------|---------------|
+| 1 | `ANTHROPIC_API_KEY` env var | Add to `.env` file: `ANTHROPIC_API_KEY=sk-ant-...` |
+| 2 | Claude Code OAuth token | Run `claude login` — the server reads `~/.claude/.credentials.json` automatically |
+
+If you have Claude Code installed and authenticated, **no extra setup is needed** — the server will use your existing Claude Code session token. The token is read from `~/.claude/.credentials.json`, validated for expiry and the `user:inference` scope, and cached with automatic re-reads every 30 seconds.
+
+The server logs which credential source it's using on startup:
+```
+HerSite server running on http://localhost:3001
+Using Claude Code OAuth token for AI agent
+```
+
+To check credential status at runtime: `GET /api/health` returns `{ "status": "ok", "credentialSource": "claude-code" | "env" | "none" }`.
 
 ### Usage Flow
 

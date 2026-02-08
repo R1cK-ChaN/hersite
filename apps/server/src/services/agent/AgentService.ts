@@ -2,12 +2,27 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { ChatMessage } from "@hersite/shared";
 import { v4 as uuid } from "uuid";
 import { ProjectService } from "../ProjectService.js";
+import { CredentialService } from "../CredentialService.js";
 import { agentTools } from "./tools.js";
 import { buildSystemPrompt } from "./systemPrompt.js";
 import { buildSiteContext } from "./context.js";
 import { listFilesRecursive } from "../../utils/fileUtils.js";
 
-const client = new Anthropic();
+let cachedClient: Anthropic | null = null;
+let cachedApiKey: string | null = null;
+
+async function getClient(): Promise<Anthropic> {
+  const apiKey = await CredentialService.getApiKey();
+
+  if (!cachedClient || cachedApiKey !== apiKey) {
+    cachedClient = new Anthropic({ apiKey });
+    cachedApiKey = apiKey;
+    const source = await CredentialService.getCredentialSource();
+    console.log(`Anthropic client initialized (source: ${source})`);
+  }
+
+  return cachedClient;
+}
 
 type MessageContent =
   | string
@@ -194,7 +209,8 @@ export const AgentService = {
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const response = await client.messages.create({
+      const anthropic = await getClient();
+      const response = await anthropic.messages.create({
         model: "claude-sonnet-4-5-20250929",
         max_tokens: 4096,
         system: systemPrompt,
