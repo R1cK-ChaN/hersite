@@ -10,7 +10,8 @@ let socket: TypedSocket | null = null;
 
 export function getSocket(): TypedSocket {
   if (!socket) {
-    socket = io("/", {
+    const serverUrl = import.meta.env.VITE_SERVER_URL || "/";
+    socket = io(serverUrl, {
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: Infinity,

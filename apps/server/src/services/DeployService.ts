@@ -1,16 +1,34 @@
-import { spawn } from "child_process";
+import fs from "fs/promises";
+import path from "path";
 import { BuildService } from "./BuildService.js";
+import { listFilesRecursive } from "../utils/fileUtils.js";
 import type { Server } from "socket.io";
-import type { ServerToClientEvents, ClientToServerEvents } from "@hersite/shared";
+import type {
+  ServerToClientEvents,
+  ClientToServerEvents,
+} from "@hersite/shared";
+
+interface VercelFile {
+  file: string;
+  data: string; // base64
+}
 
 export const DeployService = {
   async deploy(
     projectPath: string,
-    io: Server<ClientToServerEvents, ServerToClientEvents>
+    io: Server<ClientToServerEvents, ServerToClientEvents>,
   ): Promise<string> {
-    // Step 1: Build the project
+    const token = process.env.VERCEL_TOKEN;
+    if (!token) {
+      const error =
+        "VERCEL_TOKEN not set. Add it to .env to enable deployment.";
+      io.emit("deploy:status", { status: "failed", error });
+      throw new Error(error);
+    }
+
     io.emit("deploy:status", { status: "deploying" });
 
+    // Step 1: Build
     let distPath: string;
     try {
       distPath = await BuildService.buildProject(projectPath);
@@ -20,57 +38,71 @@ export const DeployService = {
       throw err;
     }
 
-    // Step 2: Deploy with Vercel CLI
-    return new Promise((resolve, reject) => {
-      const proc = spawn(
-        "npx",
-        ["vercel", "deploy", "--prod", "--yes", distPath],
-        {
-          cwd: projectPath,
-          stdio: ["pipe", "pipe", "pipe"],
-          shell: true,
-          env: {
-            ...process.env,
-            FORCE_COLOR: "0",
-          },
-        }
-      );
+    // Step 2: Collect built files for the Vercel API
+    try {
+      const files = await listFilesRecursive(distPath);
+      const vercelFiles: VercelFile[] = [];
 
-      let output = "";
-
-      proc.stdout?.on("data", (data: Buffer) => {
-        const text = data.toString().trim();
-        output += text;
-        console.log(`[vercel] ${text}`);
-      });
-
-      proc.stderr?.on("data", (data: Buffer) => {
-        const text = data.toString().trim();
-        console.log(`[vercel:err] ${text}`);
-      });
-
-      proc.on("exit", (code) => {
-        if (code === 0) {
-          // Parse the deployment URL from vercel output
-          const urlMatch = output.match(/(https:\/\/[^\s]+\.vercel\.app)/);
-          const url = urlMatch ? urlMatch[1] : output.trim();
-
-          io.emit("deploy:status", { status: "deployed", url });
-          resolve(url);
-        } else {
-          const error = `Vercel deploy failed with code ${code}`;
-          io.emit("deploy:status", { status: "failed", error });
-          reject(new Error(error));
-        }
-      });
-
-      proc.on("error", (err) => {
-        io.emit("deploy:status", {
-          status: "failed",
-          error: err.message,
+      for (const relativePath of files) {
+        const fullPath = path.join(distPath, relativePath);
+        const content = await fs.readFile(fullPath);
+        vercelFiles.push({
+          file: relativePath,
+          data: content.toString("base64"),
         });
-        reject(err);
+      }
+
+      // Step 3: Deploy via Vercel REST API
+      const projectName = process.env.VERCEL_PROJECT_NAME || "hersite";
+
+      const response = await fetch("https://api.vercel.com/v13/deployments", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: projectName,
+          files: vercelFiles.map((f) => ({
+            file: f.file,
+            data: f.data,
+            encoding: "base64",
+          })),
+          target: "production",
+          projectSettings: {
+            framework: null, // pre-built static files
+          },
+        }),
       });
-    });
+
+      if (!response.ok) {
+        const body = await response.text();
+        const error = `Vercel API error ${response.status}: ${body}`;
+        io.emit("deploy:status", { status: "failed", error });
+        throw new Error(error);
+      }
+
+      const result = (await response.json()) as {
+        url?: string;
+        alias?: string[];
+        readyState?: string;
+      };
+      const url = result.alias?.[0]
+        ? `https://${result.alias[0]}`
+        : result.url
+          ? `https://${result.url}`
+          : "";
+
+      io.emit("deploy:status", { status: "deployed", url });
+      console.log(`Deployed to: ${url}`);
+      return url;
+    } catch (err) {
+      if (err instanceof Error && err.message.startsWith("Vercel API error")) {
+        throw err;
+      }
+      const error = err instanceof Error ? err.message : String(err);
+      io.emit("deploy:status", { status: "failed", error });
+      throw err;
+    }
   },
 };

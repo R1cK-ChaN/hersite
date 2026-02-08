@@ -15,7 +15,7 @@ type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
 
 export function registerSocketHandlers(
   io: TypedServer,
-  socket: TypedSocket
+  socket: TypedSocket,
 ): void {
   // Handle project creation
   socket.on("project:create", async (data) => {
@@ -25,17 +25,17 @@ export function registerSocketHandlers(
       const project = await ProjectService.scaffoldProject(
         data.templateId as TemplateId,
         data.name,
-        data.tagline
+        data.tagline,
       );
 
       const projectPath = ProjectService.getProjectPath();
       if (!projectPath) throw new Error("Project path not found");
 
-      // Initialize git repo
+      // Initialize git repo (+ optional remote)
       await GitService.initRepo(projectPath);
 
-      // Start Astro dev server
-      const previewUrl = await BuildService.startDevServer(projectPath);
+      // Start preview (dev server or build+serve depending on NODE_ENV)
+      const previewUrl = await BuildService.startPreview(projectPath);
       ProjectService.setPreviewUrl(previewUrl);
 
       // Update project info with preview URL
@@ -61,25 +61,31 @@ export function registerSocketHandlers(
         data.attachments,
         (chunk, messageId) => {
           socket.emit("agent:stream", { messageId, chunk });
-        }
+        },
       );
 
       socket.emit("agent:typing", false);
       socket.emit("agent:message", response);
 
       if (changedFiles.length > 0) {
-        // Commit changes
-        await GitService.commitChanges(
-          `Update: ${changedFiles.join(", ")}`
-        );
+        // Commit and push changes (push only if remote is configured)
+        await GitService.commitAndPush(`Update: ${changedFiles.join(", ")}`);
+
+        // In production mode, rebuild the static site
+        if (BuildService.isProduction()) {
+          const projectPath = ProjectService.getProjectPath();
+          if (projectPath) {
+            await BuildService.rebuild(projectPath);
+          }
+        }
+
         socket.emit("preview:update", { changedFiles });
       }
     } catch (err) {
       console.error("Chat error:", err);
       socket.emit("agent:typing", false);
       socket.emit("agent:error", {
-        error:
-          err instanceof Error ? err.message : "Failed to process message",
+        error: err instanceof Error ? err.message : "Failed to process message",
       });
     }
   });
@@ -93,19 +99,12 @@ export function registerSocketHandlers(
         return;
       }
 
-      // Commit any pending changes
-      await GitService.commitChanges("Pre-deploy commit");
+      // Commit and push any pending changes
+      await GitService.commitAndPush("Pre-deploy commit");
 
-      // Stop dev server before build
-      await BuildService.stopDevServer();
-
-      // Deploy
+      // Deploy (builds internally via Vercel API)
       const url = await DeployService.deploy(projectPath, io);
       ProjectService.setSiteUrl(url);
-
-      // Restart dev server
-      const previewUrl = await BuildService.startDevServer(projectPath);
-      ProjectService.setPreviewUrl(previewUrl);
     } catch (err) {
       console.error("Deploy error:", err);
       socket.emit("deploy:status", {

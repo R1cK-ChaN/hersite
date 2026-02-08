@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024, files: 5 }, // 10MB, max 5 files
   fileFilter: (_req, file, cb) => {
     const allowed = [
       ".docx",
@@ -71,11 +71,11 @@ uploadRouter.post("/", upload.single("file"), async (req, res) => {
       const buffer = await fs.readFile(file.path);
       const converted = await FileConverterService.convertDocx(
         buffer,
-        file.originalname
+        file.originalname,
       );
       const savedPath = await FileConverterService.saveAsBlogPost(
         converted.mdxContent,
-        converted.slug
+        converted.slug,
       );
 
       result = {

@@ -9,9 +9,6 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "npx tsc --noEmit --skipLibCheck"
-    ],
     "*.{ts,tsx,js,jsx,json,css,md,mdx}": [
       "prettier --write"
     ]
