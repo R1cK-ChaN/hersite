@@ -1,0 +1,217 @@
+---
+// Editorial Luxury Minimal - Personal Brand Website
+// Data section: content extracted for easy modification
+
+const experience = [
+  {
+    company: "BCG",
+    role: "Analytics Consultant",
+    desc: "Training structural thinking and data-driven decision making within top-tier consulting frameworks."
+  },
+  {
+    company: "CITIC Securities",
+    role: "Investment Banking Analyst",
+    desc: "Deep diving into A-share IPOs and understanding capital market mechanisms."
+  },
+  {
+    company: "DiDi",
+    role: "Business Data Analyst",
+    desc: "Supporting high-growth business decisions with rigorous data analytics."
+  },
+  {
+    company: "TPC Group",
+    role: "Management Trainee",
+    desc: "Rotating across business units in a 120-year-old family enterprise to understand the real business ecosystem."
+  }
+];
+
+const writings = [
+  {
+    date: "Oct 2025",
+    title: "The Next Decade of Asian Sustainable Finance",
+    excerpt: "Exploring how ESG frameworks are adapting to the unique regulatory landscapes of Southeast Asia."
+  },
+  {
+    date: "Aug 2025",
+    title: "Year One in Singapore: A Beijinger's Observation",
+    excerpt: "Cultural nuances, capital flows, and the subtle art of networking in the Lion City."
+  },
+  {
+    date: "Jun 2025",
+    title: "Why Composite Backgrounds Matter in Modern Finance",
+    excerpt: "The intersection of tech, data, and traditional banking is where the alpha lies."
+  }
+];
+---
+
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="Cynthia Liu - Finance Professional based in Singapore. Bridging capital, strategy, and impact." />
+    <title>Cynthia Liu | Finance Professional</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+</head>
+<body class="bg-cream text-ink antialiased selection:bg-oldGold selection:text-white">
+
+    <!-- Hero Section -->
+    <section class="min-h-screen relative flex items-center px-6 md:px-12 lg:px-24 overflow-hidden">
+        <div class="absolute top-0 right-0 w-[50vw] h-[80vh] bg-stone opacity-10 rounded-bl-[200px] -z-10 blur-3xl"></div>
+
+        <div class="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pt-20 lg:pt-0">
+            <div class="lg:col-span-7 flex flex-col justify-center space-y-8 animate-fade-up" style="animation-delay: 0.1s;">
+                <div class="space-y-2">
+                    <p class="font-sans text-oldGold tracking-[0.2em] text-sm uppercase font-medium">Finance Professional · Singapore</p>
+                    <h1 class="font-serif text-6xl md:text-8xl lg:text-9xl leading-[0.9] text-ink font-light">
+                        Cynthia <br/> <span class="italic">Liu</span>
+                    </h1>
+                </div>
+
+                <p class="font-sans text-lg md:text-xl text-ink/80 font-light max-w-md border-l-2 border-stone pl-6 py-2">
+                    Management Trainee @ TPC Group.<br/>
+                    Bridging capital, strategy, and impact.
+                </p>
+
+                <div class="flex flex-wrap gap-6 pt-4">
+                    <a href="#experience" class="px-8 py-3 bg-navy text-white font-sans text-sm tracking-widest uppercase hover:bg-navy/85 transition-colors duration-300">
+                        View My Work
+                    </a>
+                    <a href="#connect" class="px-8 py-3 border border-ink text-ink font-sans text-sm tracking-widest uppercase hover:bg-ink hover:text-white transition-colors duration-300">
+                        Get in Touch
+                    </a>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 relative h-full flex justify-center lg:justify-end animate-fade-up" style="animation-delay: 0.3s;">
+                <div class="w-64 h-64 md:w-80 md:h-80 lg:w-[400px] lg:h-[400px] rounded-full overflow-hidden border border-stone relative group">
+                    <div class="w-full h-full bg-[#E5E0D8] flex items-center justify-center text-oldGold">
+                       <span class="font-serif italic text-2xl">Image Placeholder</span>
+                    </div>
+                    <div class="absolute inset-0 bg-navy opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="py-24 md:py-32 px-6 md:px-12 lg:px-24">
+        <div class="max-w-4xl mx-auto">
+            <span class="block font-sans text-stone text-xs uppercase tracking-[0.3em] mb-12">About Me</span>
+
+            <div class="space-y-8 font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed text-ink font-light">
+                <p class="opacity-90">
+                    I grew up in mainland China, studied Economics at CUFE Beijing, then moved to Singapore for my MSc in Finance at NTU. From early on, <span class="text-oldGold italic">I made a deliberate choice</span> to work across consulting, investment banking, and internet data analytics — because truly understanding finance requires entering the same problem from multiple angles.
+                </p>
+                <p class="opacity-90">
+                    I currently serve as a Management Trainee at TPC Group, rotating across real estate, M&A, and sustainability. This role has given me a rare vantage point to observe how capital, strategy, and impact interweave in real business decisions within a 120-year-old family enterprise.
+                </p>
+                <p class="opacity-90">
+                    My sustained interests lie in <span class="italic decoration-1 underline underline-offset-4 decoration-stone">Asian capital markets</span> and impact investing. I hope to be someone who can build understanding and bridges between China and Southeast Asia.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" class="py-24 bg-white px-6 md:px-12 lg:px-24 border-y border-stone/30">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-end mb-16">
+                <h2 class="font-serif text-5xl text-ink">Selected Experience</h2>
+                <div class="hidden md:block w-32 h-[1px] bg-ink"></div>
+            </div>
+
+            <div class="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {experience.map((item) => (
+                    <div class="group relative p-8 bg-cream/30 border border-stone hover:border-navy transition-all duration-300 hover:-translate-y-1">
+                        <div class="h-12 mb-6 opacity-50 grayscale group-hover:grayscale-0 transition-all">
+                            <span class="font-sans font-bold text-xl tracking-tighter text-ink">{item.company}</span>
+                        </div>
+                        <h3 class="font-serif text-2xl mb-3 text-navy">{item.role}</h3>
+                        <p class="font-sans text-sm leading-relaxed text-ink/70">{item.desc}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- Insights Section -->
+    <section class="py-24 md:py-32 px-6 md:px-12 lg:px-24">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="font-serif text-5xl text-ink mb-16 text-center md:text-left">Insights</h2>
+
+            <div class="space-y-0">
+                {writings.map((post) => (
+                    <article class="group flex flex-col md:flex-row gap-4 md:gap-12 py-10 border-t border-stone cursor-pointer hover:bg-white/50 transition-colors">
+                        <div class="md:w-32 flex-shrink-0">
+                            <span class="font-sans text-xs uppercase tracking-widest text-oldGold">{post.date}</span>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="font-serif text-3xl md:text-4xl mb-2 text-ink group-hover:text-navy transition-colors">
+                                {post.title}
+                            </h3>
+                            <p class="font-sans text-base text-ink/60 max-w-2xl">
+                                {post.excerpt}
+                            </p>
+                        </div>
+                        <div class="hidden md:flex items-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-4 group-hover:translate-x-0 duration-300">
+                            <span class="text-3xl font-serif">&rarr;</span>
+                        </div>
+                    </article>
+                ))}
+                <div class="w-full h-[1px] bg-stone"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Connect Section -->
+    <section id="connect" class="py-32 bg-navy text-cream px-6 text-center">
+        <div class="max-w-3xl mx-auto space-y-12">
+            <p class="font-serif text-3xl md:text-4xl font-light italic opacity-90">
+                "Open to conversations regarding Asian markets, sustainable investment, and cross-border opportunities."
+            </p>
+
+            <div class="flex flex-col md:flex-row justify-center gap-8 pt-8">
+                <a href="https://linkedin.com/in/cynthia-liumingyue" target="_blank" rel="noopener noreferrer" class="inline-block px-10 py-4 border border-cream hover:bg-cream hover:text-navy font-sans text-sm tracking-[0.2em] uppercase transition-all duration-300">
+                    Connect on LinkedIn
+                </a>
+                <a href="mailto:hello@example.com" class="inline-block px-10 py-4 border border-cream bg-cream text-navy hover:bg-transparent hover:text-cream font-sans text-sm tracking-[0.2em] uppercase transition-all duration-300">
+                    Send an Email
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-navy text-cream/40 py-8 text-center font-sans text-xs uppercase tracking-widest border-t border-cream/10">
+        &copy; {new Date().getFullYear()} Cynthia Liu. All Rights Reserved.
+    </footer>
+
+    <style is:global>
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+        h1, h2, h3, .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-up {
+            animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+        }
+    </style>
+</body>
+</html>

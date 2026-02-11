@@ -28,7 +28,7 @@ export interface ProjectInfo {
   hasUnpublishedChanges: boolean;
 }
 
-export type TemplateId = "blog" | "portfolio" | "blog-portfolio";
+export type TemplateId = "blog" | "portfolio" | "blog-portfolio" | "luxury";
 
 export type DeployStatus = "idle" | "deploying" | "deployed" | "failed";
 
@@ -56,6 +56,20 @@ export const TEMPLATES: TemplateInfo[] = [
     id: "blog-portfolio",
     name: "Blog + Portfolio",
     description: "The best of both — blog posts and a portfolio",
-    features: ["Blog + Portfolio sections", "Featured content", "Full navigation"],
+    features: [
+      "Blog + Portfolio sections",
+      "Featured content",
+      "Full navigation",
+    ],
+  },
+  {
+    id: "luxury",
+    name: "Luxury Brand",
+    description: "Editorial luxury minimal — a high-end personal brand site",
+    features: [
+      "Magazine-style typography",
+      "Elegant animations",
+      "Cream & navy palette",
+    ],
   },
 ];
