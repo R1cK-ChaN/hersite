@@ -1,102 +1,60 @@
-import { spawn, type ChildProcess } from "child_process";
+import { spawn } from "child_process";
 import path from "path";
 import express from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import type { Express } from "express";
+import type { Server } from "socket.io";
+import type {
+  ClientToServerEvents,
+  ServerToClientEvents,
+} from "@hersite/shared";
+import { ProjectService } from "./ProjectService.js";
 
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
-
-let devProcess: ChildProcess | null = null;
-let devServerUrl: string | null = null;
-let staticServePath: string | null = null;
+const SITES_DIR =
+  process.env.SITES_DIR ||
+  path.resolve(
+    path.dirname(new URL(import.meta.url).pathname),
+    "../../../sites",
+  );
 
 export const BuildService = {
   /**
-   * Start the preview — either spawns astro dev (local) or builds and
-   * serves static files (production / cloud).
+   * Build a user's site for preview.
+   * Runs `astro build` outputting to dist/preview/.
+   * Emits `preview:rebuilt` to the user's Socket.IO room when done.
    */
-  async startPreview(projectPath: string): Promise<string> {
-    if (IS_PRODUCTION) {
-      return this.buildAndServe(projectPath);
+  async buildForPreview(
+    userId: string,
+    io?: Server<ClientToServerEvents, ServerToClientEvents>,
+  ): Promise<void> {
+    const projectPath = ProjectService.getProjectPath(userId);
+    console.log(`[build] Building preview for user ${userId}...`);
+    const start = Date.now();
+
+    await this.installDeps(projectPath);
+    await this.runAstroBuild(projectPath, "dist/preview");
+
+    console.log(`[build] Preview built in ${Date.now() - start}ms`);
+
+    if (io) {
+      io.to(userId).emit("preview:rebuilt");
     }
-    return this.startDevServer(projectPath);
-  },
-
-  // ─── Dev mode: spawn astro dev ──────────────────────────────────
-  async startDevServer(projectPath: string): Promise<string> {
-    await this.stopDevServer();
-    await this.installDeps(projectPath);
-
-    return new Promise((resolve, reject) => {
-      const proc = spawn("npx", ["astro", "dev", "--port", "0"], {
-        cwd: projectPath,
-        stdio: ["pipe", "pipe", "pipe"],
-        shell: true,
-        env: { ...process.env, FORCE_COLOR: "0" },
-      });
-
-      devProcess = proc;
-
-      let output = "";
-      const timeout = setTimeout(() => {
-        reject(new Error("Astro dev server failed to start within 30s"));
-      }, 30000);
-
-      const handleOutput = (data: Buffer) => {
-        const text = data.toString();
-        output += text;
-        console.log(`[astro] ${text.trim()}`);
-
-        const match = text.match(/localhost:(\d+)/);
-        if (match && !devServerUrl) {
-          devServerUrl = `http://localhost:${match[1]}`;
-          clearTimeout(timeout);
-          console.log(`Astro dev server running at ${devServerUrl}`);
-          resolve(devServerUrl);
-        }
-      };
-
-      proc.stdout?.on("data", handleOutput);
-      proc.stderr?.on("data", handleOutput);
-
-      proc.on("error", (err) => {
-        clearTimeout(timeout);
-        reject(err);
-      });
-
-      proc.on("exit", (code) => {
-        if (code !== 0 && !devServerUrl) {
-          clearTimeout(timeout);
-          reject(
-            new Error(`Astro dev server exited with code ${code}: ${output}`),
-          );
-        }
-        devProcess = null;
-        devServerUrl = null;
-      });
-    });
-  },
-
-  // ─── Production mode: build then serve static ───────────────────
-  async buildAndServe(projectPath: string): Promise<string> {
-    await this.installDeps(projectPath);
-    await this.buildProject(projectPath);
-    staticServePath = path.join(projectPath, "dist");
-    console.log(`Serving static build from ${staticServePath}`);
-    // The URL is relative — the proxy will serve it at /preview
-    return "/preview";
   },
 
   /**
-   * Rebuild after a file change (production mode).
-   * Returns the dist path for the preview refresh.
+   * Build a user's site for production deployment.
+   * Runs `astro build` outputting to dist/prod/.
+   * Returns the path to the dist directory.
    */
-  async rebuild(projectPath: string): Promise<void> {
-    console.log("[build] Rebuilding site...");
+  async buildForDeploy(userId: string): Promise<string> {
+    const projectPath = ProjectService.getProjectPath(userId);
+    console.log(`[build] Building for deploy, user ${userId}...`);
     const start = Date.now();
-    await this.buildProject(projectPath);
-    staticServePath = path.join(projectPath, "dist");
-    console.log(`[build] Rebuild done in ${Date.now() - start}ms`);
+
+    await this.installDeps(projectPath);
+    const distPath = await this.runAstroBuild(projectPath, "dist/prod");
+
+    console.log(`[build] Deploy build done in ${Date.now() - start}ms`);
+    return distPath;
   },
 
   async installDeps(projectPath: string): Promise<void> {
@@ -114,62 +72,16 @@ export const BuildService = {
     });
   },
 
-  async stopDevServer(): Promise<void> {
-    if (devProcess) {
-      devProcess.kill("SIGTERM");
-      devProcess = null;
-      devServerUrl = null;
-      await new Promise((r) => setTimeout(r, 500));
-    }
-  },
-
-  getDevServerUrl(): string | null {
-    return devServerUrl;
-  },
-
   /**
-   * Set up the /preview route on the Express app.
-   * In dev mode  → proxy to the Astro dev server.
-   * In prod mode → serve static files from the dist/ folder.
+   * Run `astro build` with a custom output directory.
    */
-  setupPreviewProxy(app: Express): void {
-    if (IS_PRODUCTION) {
-      // Serve static build output
-      app.use("/preview", (req, res, next) => {
-        if (!staticServePath) {
-          res.status(503).json({ error: "Site not built yet" });
-          return;
-        }
-        express.static(staticServePath)(req, res, next);
-      });
-    } else {
-      // Proxy to the Astro dev server
-      app.use(
-        "/preview",
-        (req, res, next) => {
-          if (!devServerUrl) {
-            res.status(503).json({ error: "Preview server not running" });
-            return;
-          }
-          next();
-        },
-        createProxyMiddleware({
-          target: "http://localhost:4321",
-          changeOrigin: true,
-          pathRewrite: { "^/preview": "" },
-          router: () => devServerUrl || "http://localhost:4321",
-          ws: true,
-        }),
-      );
-    }
-  },
-
-  async buildProject(projectPath: string): Promise<string> {
+  async runAstroBuild(projectPath: string, outDir: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const proc = spawn("npx", ["astro", "build"], {
+      const proc = spawn("npx", ["astro", "build", "--outDir", outDir], {
         cwd: projectPath,
         stdio: ["pipe", "pipe", "pipe"],
         shell: true,
+        env: { ...process.env, FORCE_COLOR: "0" },
       });
 
       let output = "";
@@ -181,7 +93,7 @@ export const BuildService = {
       });
 
       proc.on("exit", (code) => {
-        if (code === 0) resolve(path.join(projectPath, "dist"));
+        if (code === 0) resolve(path.join(projectPath, outDir));
         else reject(new Error(`Build failed: ${output}`));
       });
 
@@ -189,7 +101,15 @@ export const BuildService = {
     });
   },
 
-  isProduction(): boolean {
-    return IS_PRODUCTION;
+  /**
+   * Set up the /preview/:userId/* route on the Express app.
+   * Serves static files from each user's dist/preview/ directory.
+   */
+  setupPreviewRoutes(app: Express): void {
+    app.use("/preview/:userId", (req, res, next) => {
+      const { userId } = req.params;
+      const previewDir = path.join(SITES_DIR, userId, "dist", "preview");
+      express.static(previewDir)(req, res, next);
+    });
   },
 };

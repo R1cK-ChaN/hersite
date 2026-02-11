@@ -1,9 +1,5 @@
 import "dotenv/config";
-import express, {
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
+import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
@@ -14,6 +10,7 @@ import { projectRouter } from "./routes/project.js";
 import { registerSocketHandlers } from "./socket/handlers.js";
 import { CredentialService } from "./services/CredentialService.js";
 import { BuildService } from "./services/BuildService.js";
+import { DatabaseService } from "./services/DatabaseService.js";
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -23,7 +20,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || "3001", 10);
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const EDITOR_ORIGIN = process.env.EDITOR_ORIGIN || "http://localhost:5173";
-const AUTH_PASSWORD = process.env.HERSITE_AUTH_PASSWORD || "";
 
 const app = express();
 const httpServer = createServer(app);
@@ -36,30 +32,8 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   maxHttpBufferSize: 10 * 1024 * 1024, // 10MB
 });
 
-// Basic auth middleware (only active when HERSITE_AUTH_PASSWORD is set)
-if (AUTH_PASSWORD) {
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    // Allow health check without auth
-    if (req.path === "/api/health") return next();
-
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Basic ")) {
-      res.set("WWW-Authenticate", 'Basic realm="HerSite"');
-      res.status(401).json({ error: "Authentication required" });
-      return;
-    }
-
-    const decoded = Buffer.from(authHeader.slice(6), "base64").toString();
-    const [, password] = decoded.split(":");
-    if (password !== AUTH_PASSWORD) {
-      res.status(403).json({ error: "Invalid credentials" });
-      return;
-    }
-
-    next();
-  });
-  console.log("Basic auth enabled (HERSITE_AUTH_PASSWORD is set)");
-}
+// Initialize database
+DatabaseService.init();
 
 // Middleware
 app.use(cors({ origin: IS_PRODUCTION ? true : EDITOR_ORIGIN }));
@@ -70,8 +44,8 @@ const uploadsDir =
   process.env.UPLOADS_DIR || path.resolve(__dirname, "../../uploads");
 app.use("/uploads", express.static(uploadsDir));
 
-// Preview proxy setup (dev mode proxy or production static serve)
-BuildService.setupPreviewProxy(app);
+// Preview routes: serve static builds per user
+BuildService.setupPreviewRoutes(app);
 
 // API routes
 app.use("/api/upload", uploadRouter);
