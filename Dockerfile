@@ -11,8 +11,8 @@ WORKDIR /app
 # Copy all source code
 COPY . .
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile --ignore-scripts
+# Install dependencies (native modules like better-sqlite3 and sharp need postinstall scripts)
+RUN pnpm install --frozen-lockfile
 
 # Build everything (shared -> editor -> server via Turborepo)
 RUN pnpm build
