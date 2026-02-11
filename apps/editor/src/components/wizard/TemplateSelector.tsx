@@ -1,5 +1,5 @@
 import { TEMPLATES, type TemplateId } from "@hersite/shared";
-import { FileText, Image, LayoutGrid, Check } from "lucide-react";
+import { FileText, Image, LayoutGrid, Check, Diamond } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ const templateIcons: Record<TemplateId, React.ReactNode> = {
   blog: <FileText className="w-8 h-8" />,
   portfolio: <Image className="w-8 h-8" />,
   "blog-portfolio": <LayoutGrid className="w-8 h-8" />,
+  luxury: <Diamond className="w-8 h-8" />,
 };
 
 export function TemplateSelector({ onSelect }: TemplateSelectorProps) {
@@ -40,7 +41,7 @@ export function TemplateSelector({ onSelect }: TemplateSelectorProps) {
               "relative p-6 rounded-xl border-2 text-left transition-all hover:border-primary/50 hover:shadow-md",
               selected === template.id
                 ? "border-primary bg-primary/5 shadow-md"
-                : "border-border bg-card"
+                : "border-border bg-card",
             )}
           >
             {selected === template.id && (

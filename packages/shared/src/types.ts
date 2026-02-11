@@ -36,7 +36,7 @@ export interface AuthResult {
   error?: string;
 }
 
-export type TemplateId = "blog" | "portfolio" | "blog-portfolio";
+export type TemplateId = "blog" | "portfolio" | "blog-portfolio" | "luxury";
 
 export type DeployStatus = "idle" | "deploying" | "deployed" | "failed";
 
@@ -68,6 +68,16 @@ export const TEMPLATES: TemplateInfo[] = [
       "Blog + Portfolio sections",
       "Featured content",
       "Full navigation",
+    ],
+  },
+  {
+    id: "luxury",
+    name: "Luxury Brand",
+    description: "Editorial luxury minimal — a high-end personal brand site",
+    features: [
+      "Magazine-style typography",
+      "Elegant animations",
+      "Cream & navy palette",
     ],
   },
 ];
