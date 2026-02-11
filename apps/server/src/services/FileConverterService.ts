@@ -13,11 +13,11 @@ const turndown = new TurndownService({
 
 export const FileConverterService = {
   async convertDocx(
+    userId: string,
     buffer: Buffer,
-    fileName: string
+    fileName: string,
   ): Promise<{ mdxContent: string; title: string; slug: string }> {
-    const projectPath = ProjectService.getProjectPath();
-    if (!projectPath) throw new Error("No active project");
+    const projectPath = ProjectService.getProjectPath(userId);
 
     // Convert docx to HTML with embedded images
     const result = await mammoth.convertToHtml(
@@ -28,14 +28,13 @@ export const FileConverterService = {
             return { src: `data:${image.contentType};base64,${imageBuffer}` };
           });
         }),
-      }
+      },
     );
 
     const html = result.value;
 
     // Extract and save images
-    const imageRegex =
-      /src="data:(image\/[^;]+);base64,([^"]+)"/g;
+    const imageRegex = /src="data:(image\/[^;]+);base64,([^"]+)"/g;
     let processedHtml = html;
     let match;
     const savedImages: string[] = [];
@@ -43,7 +42,6 @@ export const FileConverterService = {
     while ((match = imageRegex.exec(html)) !== null) {
       const contentType = match[1];
       const base64Data = match[2];
-      const ext = contentType.split("/")[1] || "png";
       const imageId = uuid().slice(0, 8);
       const imageName = `blog-${imageId}.webp`;
       const imagePath = path.join(projectPath, "public/images", imageName);
@@ -59,7 +57,7 @@ export const FileConverterService = {
 
       processedHtml = processedHtml.replace(
         match[0],
-        `src="/images/${imageName}"`
+        `src="/images/${imageName}"`,
       );
       savedImages.push(imageName);
     }
@@ -69,9 +67,7 @@ export const FileConverterService = {
 
     // Extract title from first heading
     const titleMatch = markdown.match(/^#\s+(.+)$/m);
-    const title = titleMatch
-      ? titleMatch[1]
-      : fileName.replace(/\.docx$/i, "");
+    const title = titleMatch ? titleMatch[1] : fileName.replace(/\.docx$/i, "");
 
     // Generate slug
     const slug = title
@@ -106,11 +102,12 @@ ${contentWithoutTitle}
   },
 
   async saveAsBlogPost(
+    userId: string,
     mdxContent: string,
-    slug: string
+    slug: string,
   ): Promise<string> {
     const filePath = `src/content/blog/${slug}.mdx`;
-    await ProjectService.writeFile(filePath, mdxContent);
+    await ProjectService.writeFile(userId, filePath, mdxContent);
     return filePath;
   },
 };

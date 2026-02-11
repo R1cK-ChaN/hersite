@@ -38,21 +38,28 @@ interface ConversationMessage {
   content: MessageContent;
 }
 
-const conversationHistory: ConversationMessage[] = [];
+/** Per-user conversation histories */
+const conversationHistories = new Map<string, ConversationMessage[]>();
+
+function getHistory(userId: string): ConversationMessage[] {
+  let history = conversationHistories.get(userId);
+  if (!history) {
+    history = [];
+    conversationHistories.set(userId, history);
+  }
+  return history;
+}
 
 async function executeTool(
+  userId: string,
   name: string,
   input: Record<string, unknown>,
 ): Promise<string> {
-  const projectPath = ProjectService.getProjectPath();
-  if (!projectPath && name !== "listFiles") {
-    return JSON.stringify({ error: "No active project" });
-  }
-
   try {
     switch (name) {
       case "readFile": {
         const content = await ProjectService.getFileContent(
+          userId,
           input.path as string,
         );
         return content;
@@ -60,6 +67,7 @@ async function executeTool(
 
       case "writeFile": {
         await ProjectService.writeFile(
+          userId,
           input.path as string,
           input.content as string,
         );
@@ -68,6 +76,7 @@ async function executeTool(
 
       case "modifyFile": {
         const content = await ProjectService.getFileContent(
+          userId,
           input.path as string,
         );
         const search = input.search as string;
@@ -76,14 +85,18 @@ async function executeTool(
           return `Error: Could not find the search text in ${input.path}. Try reading the file first to see its exact contents.`;
         }
         const updated = content.replace(search, replace);
-        await ProjectService.writeFile(input.path as string, updated);
+        await ProjectService.writeFile(userId, input.path as string, updated);
         return `File modified successfully: ${input.path}`;
       }
 
       case "listFiles": {
-        if (!projectPath) return JSON.stringify([]);
-        const files = await listFilesRecursive(projectPath);
-        return JSON.stringify(files);
+        const projectPath = ProjectService.getProjectPath(userId);
+        try {
+          const files = await listFilesRecursive(projectPath);
+          return JSON.stringify(files);
+        } catch {
+          return JSON.stringify([]);
+        }
       }
 
       case "createBlogPost": {
@@ -107,7 +120,11 @@ async function executeTool(
           .join("\n");
 
         const content = `${frontmatter}\n\n${input.content}`;
-        await ProjectService.writeFile(`src/content/blog/${slug}.mdx`, content);
+        await ProjectService.writeFile(
+          userId,
+          `src/content/blog/${slug}.mdx`,
+          content,
+        );
         return `Blog post created: src/content/blog/${slug}.mdx`;
       }
 
@@ -124,6 +141,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 `;
         await ProjectService.writeFile(
+          userId,
           `src/pages/${input.slug}.astro`,
           pageContent,
         );
@@ -131,15 +149,16 @@ import Layout from '../layouts/Layout.astro';
         // Add to navigation in Layout.astro
         try {
           const layoutContent = await ProjectService.getFileContent(
+            userId,
             "src/layouts/Layout.astro",
           );
           const navLinkHtml = `<a href="/${input.slug}">${input.title}</a>`;
-          // Insert before closing </nav>
           const updatedLayout = layoutContent.replace(
             "</nav>",
             `  ${navLinkHtml}\n      </nav>`,
           );
           await ProjectService.writeFile(
+            userId,
             "src/layouts/Layout.astro",
             updatedLayout,
           );
@@ -153,6 +172,7 @@ import Layout from '../layouts/Layout.astro';
       case "updateTheme": {
         const variables = input.variables as Record<string, string>;
         let themeContent = await ProjectService.getFileContent(
+          userId,
           "src/styles/theme.css",
         );
 
@@ -165,12 +185,16 @@ import Layout from '../layouts/Layout.astro';
           }
         }
 
-        await ProjectService.writeFile("src/styles/theme.css", themeContent);
+        await ProjectService.writeFile(
+          userId,
+          "src/styles/theme.css",
+          themeContent,
+        );
         return `Theme updated: ${Object.keys(variables).join(", ")}`;
       }
 
       case "deleteFile": {
-        await ProjectService.deleteFile(input.path as string);
+        await ProjectService.deleteFile(userId, input.path as string);
         return `File deleted: ${input.path}`;
       }
 
@@ -184,15 +208,17 @@ import Layout from '../layouts/Layout.astro';
 
 export const AgentService = {
   async processMessage(
+    userId: string,
     userMessage: string,
     attachments?: string[],
     onStream?: (chunk: string, messageId: string) => void,
   ): Promise<{ response: ChatMessage; changedFiles: string[] }> {
     const messageId = uuid();
     const changedFiles: string[] = [];
+    const conversationHistory = getHistory(userId);
 
     // Build system prompt with current context
-    const context = await buildSiteContext();
+    const context = await buildSiteContext(userId);
     const systemPrompt = buildSystemPrompt(context);
 
     // Add user message to history
@@ -242,7 +268,6 @@ export const AgentService = {
 
       // If no tool calls, we're done
       if (toolUseBlocks.length === 0 || response.stop_reason === "end_turn") {
-        // Store assistant response in history
         conversationHistory.push({
           role: "assistant",
           content: response.content,
@@ -259,6 +284,7 @@ export const AgentService = {
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
       for (const toolUse of toolUseBlocks) {
         const result = await executeTool(
+          userId,
           toolUse.name,
           toolUse.input as Record<string, unknown>,
         );
@@ -317,7 +343,7 @@ export const AgentService = {
     return { response: chatMessage, changedFiles };
   },
 
-  clearHistory(): void {
-    conversationHistory.length = 0;
+  clearHistory(userId: string): void {
+    conversationHistories.delete(userId);
   },
 };

@@ -3,14 +3,28 @@ import path from "path";
 import { ProjectService } from "./ProjectService.js";
 import { fileExists } from "../utils/fileUtils.js";
 
-let git: SimpleGit | null = null;
+/** Per-user git instances */
+const gitInstances = new Map<string, SimpleGit>();
 
 // Remote repo URL for persistent storage (optional)
 const REMOTE_REPO = process.env.HERSITE_GIT_REMOTE || "";
 
-export const GitService = {
-  async initRepo(projectPath: string): Promise<void> {
+function getGit(userId: string): SimpleGit {
+  let git = gitInstances.get(userId);
+  if (!git) {
+    const projectPath = ProjectService.getProjectPath(userId);
     git = simpleGit(projectPath);
+    gitInstances.set(userId, git);
+  }
+  return git;
+}
+
+export const GitService = {
+  async initRepo(userId: string): Promise<void> {
+    const projectPath = ProjectService.getProjectPath(userId);
+    const git = simpleGit(projectPath);
+    gitInstances.set(userId, git);
+
     await git.init();
     await git.add(".");
     await git.commit("Initial commit from HerSite");
@@ -19,63 +33,63 @@ export const GitService = {
       await git.addRemote("origin", REMOTE_REPO).catch(() => {
         // Remote may already exist
       });
-      console.log(`Git remote configured: ${REMOTE_REPO}`);
+      console.log(`Git remote configured for user ${userId}: ${REMOTE_REPO}`);
     }
   },
 
   /**
    * Restore a project from a remote Git repo.
-   * Clones into the target directory and returns true if successful.
    */
-  async restoreFromRemote(targetPath: string): Promise<boolean> {
+  async restoreFromRemote(userId: string): Promise<boolean> {
     if (!REMOTE_REPO) return false;
 
+    const projectPath = ProjectService.getProjectPath(userId);
     try {
-      const exists = await fileExists(path.join(targetPath, ".git"));
+      const exists = await fileExists(path.join(projectPath, ".git"));
       if (exists) {
-        // Already cloned — just pull
-        git = simpleGit(targetPath);
+        const git = simpleGit(projectPath);
+        gitInstances.set(userId, git);
         await git.pull("origin", "main").catch(() => {
           // May fail if no remote commits yet
         });
-        console.log("Project restored from Git remote (pull)");
+        console.log(
+          `Project restored from Git remote (pull) for user ${userId}`,
+        );
         return true;
       }
 
-      // Fresh clone
-      await simpleGit().clone(REMOTE_REPO, targetPath);
-      git = simpleGit(targetPath);
-      console.log("Project restored from Git remote (clone)");
+      await simpleGit().clone(REMOTE_REPO, projectPath);
+      const git = simpleGit(projectPath);
+      gitInstances.set(userId, git);
+      console.log(
+        `Project restored from Git remote (clone) for user ${userId}`,
+      );
       return true;
     } catch (err) {
-      console.warn("Could not restore from Git remote:", err);
+      console.warn(
+        `Could not restore from Git remote for user ${userId}:`,
+        err,
+      );
       return false;
     }
   },
 
-  async commitChanges(message: string): Promise<string> {
-    if (!git) {
-      const projectPath = ProjectService.getProjectPath();
-      if (!projectPath) throw new Error("No active project");
-      git = simpleGit(projectPath);
-    }
-
+  async commitChanges(userId: string, message: string): Promise<string> {
+    const git = getGit(userId);
     await git.add(".");
     const result = await git.commit(message);
     return result.commit;
   },
 
-  /**
-   * Commit and push to remote (if configured).
-   */
-  async commitAndPush(message: string): Promise<string> {
-    const hash = await this.commitChanges(message);
+  async commitAndPush(userId: string, message: string): Promise<string> {
+    const hash = await this.commitChanges(userId, message);
 
-    if (REMOTE_REPO && git) {
+    if (REMOTE_REPO) {
+      const git = getGit(userId);
       try {
         await git.push("origin", "main", { "--force": null });
       } catch (err) {
-        console.warn("Git push failed (non-fatal):", err);
+        console.warn(`Git push failed for user ${userId} (non-fatal):`, err);
       }
     }
 
@@ -83,10 +97,10 @@ export const GitService = {
   },
 
   async getHistory(
+    userId: string,
     count: number = 10,
   ): Promise<Array<{ hash: string; message: string; date: string }>> {
-    if (!git) throw new Error("Git not initialized");
-
+    const git = getGit(userId);
     const log = await git.log({ maxCount: count });
     return log.all.map((entry) => ({
       hash: entry.hash,
@@ -95,9 +109,8 @@ export const GitService = {
     }));
   },
 
-  async revertLastCommit(): Promise<string> {
-    if (!git) throw new Error("Git not initialized");
-
+  async revertLastCommit(userId: string): Promise<string> {
+    const git = getGit(userId);
     await git.revert("HEAD", { "--no-edit": null });
     const log = await git.log({ maxCount: 1 });
     return log.latest?.hash || "";

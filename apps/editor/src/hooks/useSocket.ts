@@ -4,6 +4,7 @@ import { useChatStore } from "@/stores/chatStore";
 import { useProjectStore } from "@/stores/projectStore";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useUIStore } from "@/stores/uiStore";
+import { useAuthStore } from "@/stores/authStore";
 
 export function useSocket() {
   useEffect(() => {
@@ -13,6 +14,21 @@ export function useSocket() {
 
     socket.on("connect", () => {
       setConnected(true);
+
+      // Auto-validate persisted token on reconnect
+      const authState = useAuthStore.getState();
+      if (authState.token && !authState.isAuthenticated) {
+        authState.setAuthenticating(true);
+        socket.emit("auth:validate", { token: authState.token }, (result) => {
+          if (result.success && result.userId) {
+            authState.setAuthenticated(result.userId, authState.token!);
+          } else {
+            authState.setAuthError(
+              result.error || "Session expired. Please log in again.",
+            );
+          }
+        });
+      }
     });
 
     socket.on("disconnect", () => {
@@ -55,11 +71,22 @@ export function useSocket() {
       useProjectStore.getState().setHasUnpublishedChanges(true);
     });
 
+    socket.on("preview:rebuilt", () => {
+      usePreviewStore.getState().triggerRefresh();
+    });
+
     socket.on("deploy:status", ({ status, url, error }) => {
       useProjectStore.getState().setDeployStatus(status, url, error);
     });
 
     socket.on("project:created", (project) => {
+      useProjectStore.getState().setProject(project);
+      if (project.previewUrl) {
+        usePreviewStore.getState().setPreviewUrl(project.previewUrl);
+      }
+    });
+
+    socket.on("project:restored", (project) => {
       useProjectStore.getState().setProject(project);
       if (project.previewUrl) {
         usePreviewStore.getState().setPreviewUrl(project.previewUrl);
@@ -74,8 +101,10 @@ export function useSocket() {
       socket.off("agent:stream");
       socket.off("agent:error");
       socket.off("preview:update");
+      socket.off("preview:rebuilt");
       socket.off("deploy:status");
       socket.off("project:created");
+      socket.off("project:restored");
     };
   }, []);
 }

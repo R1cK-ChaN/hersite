@@ -1,6 +1,5 @@
 import fs from "fs/promises";
 import path from "path";
-import { BuildService } from "./BuildService.js";
 import { listFilesRecursive } from "../utils/fileUtils.js";
 import type { Server } from "socket.io";
 import type {
@@ -14,8 +13,13 @@ interface VercelFile {
 }
 
 export const DeployService = {
+  /**
+   * Deploy pre-built static files to Vercel.
+   * @param distPath - Path to the built dist directory (already built)
+   * @param io - Socket.IO server for status updates
+   */
   async deploy(
-    projectPath: string,
+    distPath: string,
     io: Server<ClientToServerEvents, ServerToClientEvents>,
   ): Promise<string> {
     const token = process.env.VERCEL_TOKEN;
@@ -28,17 +32,6 @@ export const DeployService = {
 
     io.emit("deploy:status", { status: "deploying" });
 
-    // Step 1: Build
-    let distPath: string;
-    try {
-      distPath = await BuildService.buildProject(projectPath);
-    } catch (err) {
-      const error = err instanceof Error ? err.message : String(err);
-      io.emit("deploy:status", { status: "failed", error });
-      throw err;
-    }
-
-    // Step 2: Collect built files for the Vercel API
     try {
       const files = await listFilesRecursive(distPath);
       const vercelFiles: VercelFile[] = [];
@@ -52,7 +45,6 @@ export const DeployService = {
         });
       }
 
-      // Step 3: Deploy via Vercel REST API
       const projectName = process.env.VERCEL_PROJECT_NAME || "hersite";
 
       const response = await fetch("https://api.vercel.com/v13/deployments", {
