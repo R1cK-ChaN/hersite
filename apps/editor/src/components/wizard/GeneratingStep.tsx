@@ -14,7 +14,7 @@ const statusMessages = [
   "Copying template files...",
   "Personalizing your content...",
   "Installing dependencies...",
-  "Starting preview server...",
+  "Building your site...",
   "Almost there...",
 ];
 
@@ -47,9 +47,7 @@ export function GeneratingStep({
         <Heart className="w-10 h-10 text-primary fill-primary" />
       </div>
 
-      <h2 className="text-2xl font-bold mb-6">
-        Building Your Site
-      </h2>
+      <h2 className="text-2xl font-bold mb-6">Building Your Site</h2>
 
       <div className="flex items-center justify-center gap-3 text-muted-foreground">
         <Loader2 className="w-5 h-5 animate-spin text-primary" />

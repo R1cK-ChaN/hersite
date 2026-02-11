@@ -18,7 +18,9 @@ dist/
 
 # Runtime data
 projects/
+sites/
 uploads/
+data/
 
 # OS files
 .DS_Store

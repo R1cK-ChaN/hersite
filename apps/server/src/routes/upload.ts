@@ -57,6 +57,7 @@ uploadRouter.post("/", upload.single("file"), async (req, res) => {
 
     const file = req.file;
     const ext = path.extname(file.originalname).toLowerCase();
+    const userId = req.query.userId as string;
 
     let result: Record<string, unknown> = {
       id: path.basename(file.filename, path.extname(file.filename)),
@@ -66,15 +67,17 @@ uploadRouter.post("/", upload.single("file"), async (req, res) => {
       path: file.path,
     };
 
-    // Auto-convert .docx files
-    if (ext === ".docx") {
+    // Auto-convert .docx files (requires userId for file storage)
+    if (ext === ".docx" && userId) {
       const fs = await import("fs/promises");
       const buffer = await fs.readFile(file.path);
       const converted = await FileConverterService.convertDocx(
+        userId,
         buffer,
         file.originalname,
       );
       const savedPath = await FileConverterService.saveAsBlogPost(
+        userId,
         converted.mdxContent,
         converted.slug,
       );

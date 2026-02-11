@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import { v4 as uuid } from "uuid";
 import { fileURLToPath } from "url";
 import type { ProjectInfo, TemplateId } from "@hersite/shared";
+import { DatabaseService } from "./DatabaseService.js";
 import {
   copyDir,
   ensureDir,
@@ -12,26 +13,34 @@ import {
 } from "../utils/fileUtils.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECTS_DIR =
-  process.env.PROJECTS_DIR || path.resolve(__dirname, "../../../projects");
+const SITES_DIR =
+  process.env.SITES_DIR || path.resolve(__dirname, "../../../sites");
 const TEMPLATES_DIR =
   process.env.TEMPLATES_DIR || path.resolve(__dirname, "../../../templates");
 
-let currentProject: ProjectInfo | null = null;
-let currentProjectPath: string | null = null;
-
 export const ProjectService = {
+  /** Get the base directory for a user's project files. */
+  getProjectPath(userId: string): string {
+    return path.join(SITES_DIR, userId);
+  },
+
+  /** Get the dist/preview directory for a user's built preview. */
+  getPreviewDistPath(userId: string): string {
+    return path.join(SITES_DIR, userId, "dist", "preview");
+  },
+
   async scaffoldProject(
+    userId: string,
     templateId: TemplateId,
     name: string,
     tagline?: string,
     profilePhotoPath?: string,
   ): Promise<ProjectInfo> {
     const projectId = uuid();
-    const projectPath = path.join(PROJECTS_DIR, projectId);
+    const projectPath = this.getProjectPath(userId);
     const templatePath = path.join(TEMPLATES_DIR, templateId);
 
-    // Copy template to project directory
+    // Copy template to user's project directory
     await copyDir(templatePath, projectPath);
 
     // Personalize the site
@@ -46,14 +55,15 @@ export const ProjectService = {
 
     const project: ProjectInfo = {
       id: projectId,
+      userId,
       name,
       tagline: tagline || "",
       templateId,
       hasUnpublishedChanges: false,
     };
 
-    currentProject = project;
-    currentProjectPath = projectPath;
+    // Persist to DB
+    DatabaseService.saveProject(project);
 
     return project;
   },
@@ -94,17 +104,26 @@ export const ProjectService = {
     }
   },
 
-  async getProjectState(): Promise<{
+  async getProjectState(userId: string): Promise<{
     project: ProjectInfo | null;
     files: string[];
     pages: string[];
     themeVariables: Record<string, string>;
   }> {
-    if (!currentProject || !currentProjectPath) {
+    const project = DatabaseService.getProjectByUserId(userId);
+    if (!project) {
       return { project: null, files: [], pages: [], themeVariables: {} };
     }
 
-    const files = await listFilesRecursive(currentProjectPath);
+    const projectPath = this.getProjectPath(userId);
+
+    let files: string[] = [];
+    try {
+      files = await listFilesRecursive(projectPath);
+    } catch {
+      // Project directory might not exist yet
+    }
+
     const pages = files.filter(
       (f) => f.startsWith("src/pages/") && f.endsWith(".astro"),
     );
@@ -112,7 +131,7 @@ export const ProjectService = {
     let themeVariables: Record<string, string> = {};
     try {
       const themeContent = await readFileContent(
-        path.join(currentProjectPath, "src/styles/theme.css"),
+        path.join(projectPath, "src/styles/theme.css"),
       );
       const matches = themeContent.matchAll(/--([\w-]+):\s*([^;]+);/g);
       for (const match of matches) {
@@ -123,66 +142,84 @@ export const ProjectService = {
     }
 
     return {
-      project: currentProject,
+      project,
       files,
       pages,
       themeVariables,
     };
   },
 
-  async getFileContent(relativePath: string): Promise<string> {
-    if (!currentProjectPath) throw new Error("No active project");
-    // Prevent path traversal
-    const resolved = path.resolve(currentProjectPath, relativePath);
-    if (!resolved.startsWith(currentProjectPath)) {
+  async getFileContent(userId: string, relativePath: string): Promise<string> {
+    const projectPath = this.getProjectPath(userId);
+    const resolved = path.resolve(projectPath, relativePath);
+    if (!resolved.startsWith(projectPath)) {
       throw new Error("Invalid file path");
     }
     return readFileContent(resolved);
   },
 
-  async writeFile(relativePath: string, content: string): Promise<void> {
-    if (!currentProjectPath) throw new Error("No active project");
-    const resolved = path.resolve(currentProjectPath, relativePath);
-    if (!resolved.startsWith(currentProjectPath)) {
+  async writeFile(
+    userId: string,
+    relativePath: string,
+    content: string,
+  ): Promise<void> {
+    const projectPath = this.getProjectPath(userId);
+    const resolved = path.resolve(projectPath, relativePath);
+    if (!resolved.startsWith(projectPath)) {
       throw new Error("Invalid file path");
     }
     await writeFileContent(resolved, content);
-    if (currentProject) {
-      currentProject.hasUnpublishedChanges = true;
+
+    // Mark unpublished changes in DB
+    const project = DatabaseService.getProjectByUserId(userId);
+    if (project) {
+      DatabaseService.updateProjectField(
+        project.id,
+        "has_unpublished_changes",
+        1,
+      );
     }
   },
 
-  async deleteFile(relativePath: string): Promise<void> {
-    if (!currentProjectPath) throw new Error("No active project");
-    const resolved = path.resolve(currentProjectPath, relativePath);
-    if (!resolved.startsWith(currentProjectPath)) {
+  async deleteFile(userId: string, relativePath: string): Promise<void> {
+    const projectPath = this.getProjectPath(userId);
+    const resolved = path.resolve(projectPath, relativePath);
+    if (!resolved.startsWith(projectPath)) {
       throw new Error("Invalid file path");
     }
     await fs.unlink(resolved);
-    if (currentProject) {
-      currentProject.hasUnpublishedChanges = true;
+
+    const project = DatabaseService.getProjectByUserId(userId);
+    if (project) {
+      DatabaseService.updateProjectField(
+        project.id,
+        "has_unpublished_changes",
+        1,
+      );
     }
   },
 
-  getProjectPath(): string | null {
-    return currentProjectPath;
-  },
-
-  getCurrentProject(): ProjectInfo | null {
-    return currentProject;
-  },
-
-  setPreviewUrl(url: string): void {
-    if (currentProject) {
-      currentProject.previewUrl = url;
+  setPreviewUrl(userId: string, url: string): void {
+    const project = DatabaseService.getProjectByUserId(userId);
+    if (project) {
+      DatabaseService.updateProjectField(project.id, "preview_url", url);
     }
   },
 
-  setSiteUrl(url: string): void {
-    if (currentProject) {
-      currentProject.siteUrl = url;
-      currentProject.lastDeployedAt = Date.now();
-      currentProject.hasUnpublishedChanges = false;
+  setSiteUrl(userId: string, url: string): void {
+    const project = DatabaseService.getProjectByUserId(userId);
+    if (project) {
+      DatabaseService.updateProjectField(project.id, "site_url", url);
+      DatabaseService.updateProjectField(
+        project.id,
+        "last_deployed_at",
+        Date.now(),
+      );
+      DatabaseService.updateProjectField(
+        project.id,
+        "has_unpublished_changes",
+        0,
+      );
     }
   },
 };

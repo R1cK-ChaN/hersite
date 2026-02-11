@@ -1,10 +1,13 @@
+import { useAuthStore } from "@/stores/authStore";
+
 export async function uploadFile(
   file: File,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
 ): Promise<Record<string, unknown>> {
   const formData = new FormData();
   formData.append("file", file);
 
+  const userId = useAuthStore.getState().userId;
   const xhr = new XMLHttpRequest();
 
   return new Promise((resolve, reject) => {
@@ -23,7 +26,9 @@ export async function uploadFile(
     });
 
     xhr.addEventListener("error", () => reject(new Error("Upload failed")));
-    xhr.open("POST", "/api/upload");
+
+    const url = userId ? `/api/upload?userId=${userId}` : "/api/upload";
+    xhr.open("POST", url);
     xhr.send(formData);
   });
 }

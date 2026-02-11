@@ -1,10 +1,16 @@
-import type { ChatMessage, ProjectInfo, DeployStatus } from "./types.js";
+import type {
+  ChatMessage,
+  ProjectInfo,
+  AuthResult,
+  DeployStatus,
+} from "./types.js";
 
 export interface ClientToServerEvents {
-  "chat:message": (data: {
-    content: string;
-    attachments?: string[];
-  }) => void;
+  "auth:validate": (
+    data: { token: string },
+    callback: (result: AuthResult) => void,
+  ) => void;
+  "chat:message": (data: { content: string; attachments?: string[] }) => void;
   "project:create": (data: {
     templateId: string;
     name: string;
@@ -20,10 +26,12 @@ export interface ServerToClientEvents {
   "agent:stream": (data: { messageId: string; chunk: string }) => void;
   "agent:error": (data: { error: string }) => void;
   "preview:update": (data: { changedFiles: string[] }) => void;
+  "preview:rebuilt": () => void;
   "deploy:status": (data: {
     status: DeployStatus;
     url?: string;
     error?: string;
   }) => void;
   "project:created": (project: ProjectInfo) => void;
+  "project:restored": (project: ProjectInfo) => void;
 }

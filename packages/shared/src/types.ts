@@ -19,6 +19,7 @@ export interface FileAttachment {
 
 export interface ProjectInfo {
   id: string;
+  userId: string;
   name: string;
   tagline: string;
   templateId: TemplateId;
@@ -26,6 +27,13 @@ export interface ProjectInfo {
   previewUrl?: string;
   lastDeployedAt?: number;
   hasUnpublishedChanges: boolean;
+}
+
+/** Auth-related types */
+export interface AuthResult {
+  success: boolean;
+  userId?: string;
+  error?: string;
 }
 
 export type TemplateId = "blog" | "portfolio" | "blog-portfolio";
@@ -56,6 +64,10 @@ export const TEMPLATES: TemplateInfo[] = [
     id: "blog-portfolio",
     name: "Blog + Portfolio",
     description: "The best of both — blog posts and a portfolio",
-    features: ["Blog + Portfolio sections", "Featured content", "Full navigation"],
+    features: [
+      "Blog + Portfolio sections",
+      "Featured content",
+      "Full navigation",
+    ],
   },
 ];
