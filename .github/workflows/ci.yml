@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
   pull_request:
     branches: [main]
 
@@ -12,6 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install build tools for native modules
+        run: sudo apt-get update && sudo apt-get install -y build-essential python3
 
       - uses: pnpm/action-setup@v4
         with:
