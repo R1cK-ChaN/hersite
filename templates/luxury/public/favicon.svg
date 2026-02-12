@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="16" fill="#1C3A5E"/>
-  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="72" fill="#F5F2EC" font-style="italic">C</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#1C3A5E"/>
+  <text x="38" y="88" font-family="Georgia, 'Times New Roman', serif" font-weight="300" font-size="68" fill="#F5F2EC" letter-spacing="-4">CL</text>
+  <line x1="24" y1="100" x2="104" y2="100" stroke="#8B7355" stroke-width="2"/>
 </svg>
