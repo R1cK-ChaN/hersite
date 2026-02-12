@@ -6,19 +6,45 @@ const allPosts = await getCollection('blog');
 const recentPosts = allPosts
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
-
-const allProjects = await getCollection('projects');
-const featuredProjects = allProjects
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 3);
 ---
 
 <Layout title="Home">
   <div class="container">
     <!-- Hero Section -->
     <section class="hero">
-      <h1 class="hero-title">Welcome to My Site</h1>
-      <p class="hero-tagline">Writer, creator, and maker of things. Sharing my work and thoughts with the world.</p>
+      <p class="hero-greeting">Hello, I'm</p>
+      <h1 class="hero-title">Cynthia Liu</h1>
+      <div class="hero-divider"></div>
+      <p class="hero-tagline">Finance & Luxury Retail Professional based in Singapore. Bridging the worlds of finance, luxury, and cross-cultural experiences.</p>
+      <div class="hero-cta">
+        <a href="/about" class="btn btn-primary">About Me</a>
+        <a href="/blog" class="btn btn-outline">Read Blog</a>
+      </div>
+    </section>
+
+    <!-- About Teaser -->
+    <section class="section">
+      <div class="about-teaser">
+        <div class="about-teaser-text">
+          <h2>A Bit About Me</h2>
+          <p>
+            With a Master's in Finance from NTU Singapore and a background in Economics from CUFE Beijing, I'm currently a Management Trainee at TPC Group -- Southeast Asia's leading luxury retailer representing brands like Cartier, Van Cleef & Arpels, and Vacheron Constantin.
+          </p>
+          <a href="/about" class="view-all">Learn more &rarr;</a>
+        </div>
+        <div class="about-teaser-highlights">
+          <div class="highlight-card">
+            <span class="highlight-label">Current Role</span>
+            <span class="highlight-value">Management Trainee</span>
+            <span class="highlight-sub">TPC Group, Singapore</span>
+          </div>
+          <div class="highlight-card">
+            <span class="highlight-label">Education</span>
+            <span class="highlight-value">MS Finance</span>
+            <span class="highlight-sub">Nanyang Technological University</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Recent Posts Section -->
@@ -43,58 +69,150 @@ const featuredProjects = allProjects
         ))}
       </div>
     </section>
-
-    <!-- Featured Work Section -->
-    <section class="section">
-      <div class="section-header">
-        <h2>Featured Work</h2>
-        <a href="/portfolio" class="view-all">View all &rarr;</a>
-      </div>
-      <div class="projects-grid">
-        {featuredProjects.map((project) => (
-          <a href={`/portfolio/${project.id}`} class="project-card">
-            <div class="project-card-image">
-              {project.data.image ? (
-                <img src={project.data.image} alt={project.data.title} />
-              ) : (
-                <div class="project-placeholder" />
-              )}
-            </div>
-            <div class="project-card-body">
-              <h3 class="project-card-title">{project.data.title}</h3>
-              <p class="project-card-desc">{project.data.description}</p>
-            </div>
-          </a>
-        ))}
-      </div>
-    </section>
   </div>
 </Layout>
 
 <style>
+  /* Hero */
   .hero {
     text-align: center;
-    padding: 4rem 0 3rem;
+    padding: 5rem 0 4rem;
+  }
+
+  .hero-greeting {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-accent);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
   }
 
   .hero-title {
-    font-size: 3rem;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 1rem;
+    font-size: 4rem;
+    font-family: var(--font-heading);
+    color: var(--color-text);
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-divider {
+    width: 60px;
+    height: 2px;
+    background: var(--color-accent);
+    margin: 0 auto 1.5rem;
   }
 
   .hero-tagline {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     color: var(--color-text-muted);
-    max-width: 600px;
-    margin: 0 auto;
+    max-width: 560px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
   }
 
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--color-text);
+    color: var(--color-surface);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-accent);
+    color: var(--color-surface);
+    text-decoration: none;
+  }
+
+  .btn-outline {
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text);
+    background: transparent;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  /* About Teaser */
+  .about-teaser {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .about-teaser-text h2 {
+    margin-bottom: 1rem;
+  }
+
+  .about-teaser-text p {
+    color: var(--color-text-muted);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+
+  .about-teaser-highlights {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .highlight-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .highlight-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-accent);
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .highlight-value {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.15rem;
+  }
+
+  .highlight-sub {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Sections */
   .section {
     margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
   }
 
   .section-header {
@@ -109,9 +227,10 @@ const featuredProjects = allProjects
   }
 
   .view-all {
-    font-weight: 500;
-    font-size: 0.95rem;
-    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-accent);
+    letter-spacing: 0.02em;
   }
 
   .view-all:hover {
@@ -137,7 +256,7 @@ const featuredProjects = allProjects
 
   .post-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(233, 30, 140, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     text-decoration: none;
   }
 
@@ -148,78 +267,32 @@ const featuredProjects = allProjects
   }
 
   .post-card-date {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--color-text-muted);
     display: block;
     margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
   }
 
   .post-card-desc {
     font-size: 0.95rem;
     color: var(--color-text-muted);
     margin: 0;
-    line-height: 1.5;
-  }
-
-  /* Project Cards */
-  .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .project-card {
-    display: block;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    text-decoration: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .project-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(233, 30, 140, 0.1);
-    text-decoration: none;
-  }
-
-  .project-card-image img,
-  .project-placeholder {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 0;
-  }
-
-  .project-placeholder {
-    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
-  }
-
-  .project-card-body {
-    padding: 1.25rem;
-  }
-
-  .project-card-title {
-    font-size: 1.1rem;
-    color: var(--color-text);
-    margin-bottom: 0.35rem;
-  }
-
-  .project-card-desc {
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-    margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
   }
 
   @media (max-width: 768px) {
     .hero-title {
-      font-size: 2.25rem;
+      font-size: 2.75rem;
     }
 
-    .posts-grid,
-    .projects-grid {
+    .about-teaser {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .posts-grid {
       grid-template-columns: 1fr;
     }
 

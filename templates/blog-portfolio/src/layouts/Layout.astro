@@ -15,18 +15,18 @@ const { title } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>{title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+    <title>{title} | Cynthia Liu</title>
   </head>
   <body>
     <header class="site-header">
       <div class="container">
         <nav class="nav">
-          <a href="/" class="nav-logo">MySite</a>
+          <a href="/" class="nav-logo">Cynthia Liu</a>
           <ul class="nav-links">
             <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
             <li><a href="/blog">Blog</a></li>
-            <li><a href="/portfolio">Portfolio</a></li>
           </ul>
         </nav>
       </div>
@@ -38,7 +38,13 @@ const { title } = Astro.props;
 
     <footer class="site-footer">
       <div class="container">
-        <p>Built with <a href="https://hersite.app">HerSite</a></p>
+        <div class="footer-content">
+          <p class="footer-brand">Cynthia Liu</p>
+          <p class="footer-links">
+            <a href="https://www.linkedin.com/in/cynthia-liumingyue/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          </p>
+          <p class="footer-copy">Built with <a href="https://hersite.app">HerSite</a></p>
+        </div>
       </div>
     </footer>
   </body>
@@ -59,26 +65,27 @@ const { title } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 0;
+    padding: 1.25rem 0;
   }
 
   .nav-logo {
     font-family: var(--font-heading);
-    font-size: 1.35rem;
-    font-weight: 700;
+    font-size: 1.4rem;
+    font-weight: 600;
     color: var(--color-primary);
     text-decoration: none;
+    letter-spacing: 0.02em;
   }
 
   .nav-logo:hover {
-    color: var(--color-primary-light);
+    color: var(--color-accent);
     text-decoration: none;
   }
 
   .nav-links {
     display: flex;
     list-style: none;
-    gap: 2rem;
+    gap: 2.5rem;
     padding: 0;
     margin: 0;
   }
@@ -89,10 +96,13 @@ const { title } = Astro.props;
     font-size: 0.95rem;
     text-decoration: none;
     transition: color 0.2s ease;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
   }
 
   .nav-links a:hover {
-    color: var(--color-primary);
+    color: var(--color-accent);
     text-decoration: none;
   }
 
@@ -103,19 +113,46 @@ const { title } = Astro.props;
 
   .site-footer {
     border-top: 1px solid var(--color-border);
-    padding: 2rem 0;
-    text-align: center;
+    padding: 3rem 0 2rem;
     margin-top: auto;
   }
 
-  .site-footer p {
+  .footer-content {
+    text-align: center;
+  }
+
+  .footer-brand {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+  }
+
+  .footer-links {
+    margin-bottom: 1rem;
+  }
+
+  .footer-links a {
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .footer-links a:hover {
+    color: var(--color-accent);
+  }
+
+  .footer-copy {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
     margin: 0;
   }
 
-  .site-footer a {
-    color: var(--color-primary);
+  .footer-copy a {
+    color: var(--color-accent);
     font-weight: 500;
   }
 
@@ -126,7 +163,7 @@ const { title } = Astro.props;
     }
 
     .nav-links {
-      gap: 1.25rem;
+      gap: 1.5rem;
     }
   }
 </style>
