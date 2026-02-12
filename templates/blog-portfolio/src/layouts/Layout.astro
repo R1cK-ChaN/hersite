@@ -1,169 +1,79 @@
 ---
 interface Props {
   title: string;
+  hideNav?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, hideNav = false } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cream: '#F5F2EC',
+              navy: '#1C3A5E',
+              gold: '#8B7355',
+              border: '#D4CFC7',
+            },
+            fontFamily: {
+              serif: ['Cormorant Garamond', 'serif'],
+              sans: ['DM Sans', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
     <title>{title} | Cynthia Liu</title>
   </head>
-  <body>
-    <header class="site-header">
-      <div class="container">
-        <nav class="nav">
-          <a href="/" class="nav-logo">Cynthia Liu</a>
-          <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/blog">Blog</a></li>
+  <body class="bg-cream text-[#1A1A1A] antialiased selection:bg-gold selection:text-white font-sans">
+
+    {!hideNav && (
+      <header class="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-md border-b border-border/30">
+        <nav class="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 flex items-center justify-between h-16">
+          <a href="/" class="font-serif text-xl font-light text-[#1A1A1A] hover:text-gold transition-colors">Cynthia Liu</a>
+          <ul class="flex items-center gap-8">
+            <li><a href="/#about" class="font-sans text-xs uppercase tracking-[0.2em] text-[#1A1A1A]/70 hover:text-gold transition-colors">About</a></li>
+            <li><a href="/#experience" class="font-sans text-xs uppercase tracking-[0.2em] text-[#1A1A1A]/70 hover:text-gold transition-colors">Experience</a></li>
+            <li><a href="/blog" class="font-sans text-xs uppercase tracking-[0.2em] text-[#1A1A1A]/70 hover:text-gold transition-colors">Blog</a></li>
+            <li><a href="/#connect" class="font-sans text-xs uppercase tracking-[0.2em] text-[#1A1A1A]/70 hover:text-gold transition-colors">Connect</a></li>
           </ul>
         </nav>
-      </div>
-    </header>
+      </header>
+    )}
 
     <main>
       <slot />
     </main>
 
-    <footer class="site-footer">
-      <div class="container">
-        <div class="footer-content">
-          <p class="footer-brand">Cynthia Liu</p>
-          <p class="footer-links">
-            <a href="https://www.linkedin.com/in/cynthia-liumingyue/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-          </p>
-          <p class="footer-copy">Built with <a href="https://hersite.app">HerSite</a></p>
-        </div>
-      </div>
-    </footer>
+    <style>
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-fade-up {
+        animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+      }
+    </style>
   </body>
 </html>
-
-<style>
-  @import '../styles/theme.css';
-
-  .site-header {
-    border-bottom: 1px solid var(--color-border);
-    background-color: var(--color-surface);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 0;
-  }
-
-  .nav-logo {
-    font-family: var(--font-heading);
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: var(--color-primary);
-    text-decoration: none;
-    letter-spacing: 0.02em;
-  }
-
-  .nav-logo:hover {
-    color: var(--color-accent);
-    text-decoration: none;
-  }
-
-  .nav-links {
-    display: flex;
-    list-style: none;
-    gap: 2.5rem;
-    padding: 0;
-    margin: 0;
-  }
-
-  .nav-links a {
-    color: var(--color-text);
-    font-weight: 500;
-    font-size: 0.95rem;
-    text-decoration: none;
-    transition: color 0.2s ease;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-  }
-
-  .nav-links a:hover {
-    color: var(--color-accent);
-    text-decoration: none;
-  }
-
-  main {
-    flex: 1;
-    padding: 3rem 0;
-  }
-
-  .site-footer {
-    border-top: 1px solid var(--color-border);
-    padding: 3rem 0 2rem;
-    margin-top: auto;
-  }
-
-  .footer-content {
-    text-align: center;
-  }
-
-  .footer-brand {
-    font-family: var(--font-heading);
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text);
-    margin-bottom: 0.75rem;
-  }
-
-  .footer-links {
-    margin-bottom: 1rem;
-  }
-
-  .footer-links a {
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .footer-links a:hover {
-    color: var(--color-accent);
-  }
-
-  .footer-copy {
-    color: var(--color-text-muted);
-    font-size: 0.8rem;
-    margin: 0;
-  }
-
-  .footer-copy a {
-    color: var(--color-accent);
-    font-weight: 500;
-  }
-
-  @media (max-width: 768px) {
-    .nav {
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .nav-links {
-      gap: 1.5rem;
-    }
-  }
-</style>

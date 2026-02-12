@@ -9,113 +9,48 @@ const posts = allPosts.sort(
 ---
 
 <Layout title="Blog">
-  <div class="container">
-    <header class="page-header">
-      <h1>Blog</h1>
-      <p class="page-desc">Thoughts on luxury, finance, and life between cultures.</p>
-    </header>
+  <div class="pt-24">
+    <section class="py-16 px-6 md:px-12 lg:px-24">
+      <div class="max-w-5xl mx-auto">
+        <span class="block font-sans text-[#D4CFC7] text-xs uppercase tracking-[0.3em] mb-6">Writing</span>
+        <h1 class="font-serif text-5xl md:text-7xl text-[#1A1A1A] font-light mb-4">Blog</h1>
+        <p class="font-sans text-lg text-[#1A1A1A]/60 font-light">Thoughts on luxury, finance, and life between cultures.</p>
+      </div>
+    </section>
 
-    <div class="posts-list">
-      {posts.map((post) => (
-        <a href={`/blog/${post.id}`} class="post-item">
-          <div class="post-item-content">
-            <h2 class="post-item-title">{post.data.title}</h2>
-            <time class="post-item-date" datetime={post.data.pubDate.toISOString()}>
-              {post.data.pubDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </time>
-            <p class="post-item-desc">{post.data.description}</p>
-            {post.data.tags && (
-              <div class="post-item-tags">
-                {post.data.tags.map((tag) => (
-                  <span class="tag">{tag}</span>
-                ))}
+    <section class="px-6 md:px-12 lg:px-24 pb-24">
+      <div class="max-w-5xl mx-auto">
+        <div class="space-y-0">
+          {posts.map((post) => (
+            <a href={`/blog/${post.id}`} class="group flex flex-col md:flex-row gap-4 md:gap-12 py-10 border-t border-[#D4CFC7] cursor-pointer hover:bg-white/50 transition-colors no-underline">
+              <div class="md:w-32 flex-shrink-0">
+                <span class="font-sans text-xs uppercase tracking-widest text-[#8B7355]">
+                  {post.data.pubDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </span>
               </div>
-            )}
-          </div>
-        </a>
-      ))}
-    </div>
+              <div class="flex-grow">
+                <h2 class="font-serif text-3xl md:text-4xl mb-2 text-[#1A1A1A] group-hover:text-[#1C3A5E] transition-colors">
+                  {post.data.title}
+                </h2>
+                <p class="font-sans text-base text-[#1A1A1A]/60 max-w-2xl mb-3">
+                  {post.data.description}
+                </p>
+                {post.data.tags && (
+                  <div class="flex flex-wrap gap-2">
+                    {post.data.tags.map((tag) => (
+                      <span class="font-sans text-[10px] uppercase tracking-widest text-[#8B7355] border border-[#D4CFC7] px-3 py-1">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div class="hidden md:flex items-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-4 group-hover:translate-x-0 duration-300">
+                <span class="text-3xl font-serif">&rarr;</span>
+              </div>
+            </a>
+          ))}
+          <div class="w-full h-[1px] bg-[#D4CFC7]"></div>
+        </div>
+      </div>
+    </section>
   </div>
 </Layout>
-
-<style>
-  .page-header {
-    margin-bottom: 3rem;
-  }
-
-  .page-header h1 {
-    margin-bottom: 0.5rem;
-  }
-
-  .page-desc {
-    color: var(--color-text-muted);
-    font-size: 1.1rem;
-    margin: 0;
-  }
-
-  .posts-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  .post-item {
-    display: block;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    padding: 1.75rem;
-    text-decoration: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .post-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-    text-decoration: none;
-  }
-
-  .post-item-title {
-    font-size: 1.35rem;
-    color: var(--color-text);
-    margin-bottom: 0.35rem;
-  }
-
-  .post-item-date {
-    font-size: 0.8rem;
-    color: var(--color-text-muted);
-    display: block;
-    margin-bottom: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .post-item-desc {
-    color: var(--color-text-muted);
-    font-size: 0.95rem;
-    margin: 0 0 0.75rem;
-    line-height: 1.6;
-  }
-
-  .post-item-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .tag {
-    display: inline-block;
-    background-color: var(--color-border);
-    color: var(--color-text-muted);
-    font-size: 0.75rem;
-    padding: 0.2rem 0.65rem;
-    border-radius: 999px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-</style>

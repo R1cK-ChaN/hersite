@@ -3,243 +3,131 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="About">
-  <div class="container">
-    <section class="about-hero">
-      <h1>About Me</h1>
-      <p class="about-intro">
-        I'm Cynthia Liu -- a finance professional with a passion for luxury retail, strategic thinking, and cross-cultural experiences. Currently based in Singapore, I bring together my background in economics and finance with hands-on experience in the world of prestigious luxury brands.
-      </p>
+  <div class="pt-24">
+    <!-- Header -->
+    <section class="py-16 px-6 md:px-12 lg:px-24">
+      <div class="max-w-4xl mx-auto">
+        <span class="block font-sans text-[#D4CFC7] text-xs uppercase tracking-[0.3em] mb-6">About Me</span>
+        <h1 class="font-serif text-5xl md:text-7xl text-[#1A1A1A] font-light mb-8">Cynthia <span class="italic">Liu</span></h1>
+        <p class="font-sans text-lg text-[#1A1A1A]/70 font-light max-w-2xl leading-relaxed">
+          Finance & luxury retail professional based in Singapore. Bridging the worlds of capital, strategy, and cross-cultural experiences.
+        </p>
+      </div>
     </section>
 
-    <!-- Experience Section -->
-    <section class="section">
-      <h2 class="section-title">Experience</h2>
-      <div class="timeline">
-        <div class="timeline-item">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <h3>Management Trainee</h3>
-              <span class="timeline-company">TPC (Tsao Pao Chee) Group</span>
+    <!-- Bio -->
+    <section class="py-16 px-6 md:px-12 lg:px-24 border-t border-[#D4CFC7]/30">
+      <div class="max-w-4xl mx-auto space-y-8 font-serif text-2xl md:text-3xl leading-relaxed text-[#1A1A1A] font-light">
+        <p class="opacity-90">
+          I grew up in mainland China, studied Economics at CUFE Beijing, then moved to Singapore for my MSc in Finance at NTU. From early on, <span class="text-[#8B7355] italic">I made a deliberate choice</span> to work across consulting, investment banking, and internet data analytics — because truly understanding finance requires entering the same problem from multiple angles.
+        </p>
+        <p class="opacity-90">
+          I currently serve as a Management Trainee at TPC Group — Southeast Asia's leading luxury retailer representing prestigious brands such as <span class="italic decoration-1 underline underline-offset-4 decoration-[#D4CFC7]">Cartier, Van Cleef & Arpels, IWC, and Vacheron Constantin</span>. This role has given me a rare vantage point to observe how capital, strategy, and impact interweave in the world of luxury.
+        </p>
+        <p class="opacity-90">
+          My sustained interests lie in <span class="italic decoration-1 underline underline-offset-4 decoration-[#D4CFC7]">Asian capital markets</span>, luxury retail, and impact investing. I hope to be someone who can build understanding and bridges between China and Southeast Asia.
+        </p>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section class="py-16 px-6 md:px-12 lg:px-24 border-t border-[#D4CFC7]/30">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-end mb-12">
+          <h2 class="font-serif text-4xl text-[#1A1A1A]">Education</h2>
+          <div class="hidden md:block w-24 h-[1px] bg-[#1A1A1A]"></div>
+        </div>
+
+        <div class="space-y-0">
+          <div class="flex flex-col md:flex-row gap-4 md:gap-12 py-8 border-t border-[#D4CFC7]">
+            <div class="md:w-40 flex-shrink-0">
+              <span class="font-sans text-xs uppercase tracking-widest text-[#8B7355]">Jul 2024 – 2025</span>
             </div>
-            <div class="timeline-meta">
-              <span class="timeline-date">Jul 2025 - Present</span>
-              <span class="timeline-location">Singapore</span>
-            </div>
-            <p class="timeline-desc">
-              TPC Group is a leading luxury retailer in Southeast Asia, representing prestigious brands such as Cartier, Van Cleef & Arpels, IWC, Jaeger-LeCoultre, Panerai, Piaget, Roger Dubuis, and Vacheron Constantin. Focused on operational excellence, client relationship management, and strategic business development within the luxury retail space.
-            </p>
-            <div class="timeline-tags">
-              <span class="tag">Luxury Retail</span>
-              <span class="tag">Client Relations</span>
-              <span class="tag">Business Strategy</span>
+            <div>
+              <h3 class="font-serif text-2xl text-[#1C3A5E] mb-1">Master of Science, Finance</h3>
+              <p class="font-sans text-base text-[#1A1A1A]/70">Nanyang Technological University, Singapore</p>
             </div>
           </div>
+          <div class="flex flex-col md:flex-row gap-4 md:gap-12 py-8 border-t border-[#D4CFC7]">
+            <div class="md:w-40 flex-shrink-0">
+              <span class="font-sans text-xs uppercase tracking-widest text-[#8B7355]">Sep 2020 – Jun 2024</span>
+            </div>
+            <div>
+              <h3 class="font-serif text-2xl text-[#1C3A5E] mb-1">Bachelor's Degree, Economics</h3>
+              <p class="font-sans text-base text-[#1A1A1A]/70">Central University of Finance and Economics, Beijing</p>
+            </div>
+          </div>
+          <div class="w-full h-[1px] bg-[#D4CFC7]"></div>
         </div>
       </div>
     </section>
 
-    <!-- Education Section -->
-    <section class="section">
-      <h2 class="section-title">Education</h2>
-      <div class="timeline">
-        <div class="timeline-item">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <h3>Master of Science, Finance</h3>
-              <span class="timeline-company">Nanyang Technological University</span>
-            </div>
-            <div class="timeline-meta">
-              <span class="timeline-date">Jul 2024 - 2025</span>
-              <span class="timeline-location">Singapore</span>
-            </div>
-          </div>
+    <!-- Experience -->
+    <section class="py-16 px-6 md:px-12 lg:px-24 bg-white border-y border-[#D4CFC7]/30">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-end mb-12">
+          <h2 class="font-serif text-4xl text-[#1A1A1A]">Experience</h2>
+          <div class="hidden md:block w-24 h-[1px] bg-[#1A1A1A]"></div>
         </div>
-        <div class="timeline-item">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <h3>Bachelor's Degree, Economics</h3>
-              <span class="timeline-company">Central University of Finance and Economics</span>
+
+        <div class="space-y-0">
+          <div class="flex flex-col md:flex-row gap-4 md:gap-12 py-8 border-t border-[#D4CFC7]">
+            <div class="md:w-40 flex-shrink-0">
+              <span class="font-sans text-xs uppercase tracking-widest text-[#8B7355]">Jul 2025 – Present</span>
             </div>
-            <div class="timeline-meta">
-              <span class="timeline-date">Sep 2020 - Jun 2024</span>
-              <span class="timeline-location">Beijing, China</span>
+            <div>
+              <h3 class="font-serif text-2xl text-[#1C3A5E] mb-1">Management Trainee</h3>
+              <p class="font-sans font-medium text-[#1A1A1A] mb-2">TPC Group &middot; Singapore</p>
+              <p class="font-sans text-sm text-[#1A1A1A]/60 max-w-2xl leading-relaxed">
+                Leading luxury retailer in Southeast Asia, representing Cartier, Van Cleef & Arpels, IWC, Jaeger-LeCoultre, Panerai, Piaget, Roger Dubuis, and Vacheron Constantin. Focused on operational excellence, client relationship management, and strategic business development.
+              </p>
             </div>
           </div>
+          <div class="flex flex-col md:flex-row gap-4 md:gap-12 py-8 border-t border-[#D4CFC7]">
+            <div class="md:w-40 flex-shrink-0"></div>
+            <div>
+              <h3 class="font-serif text-2xl text-[#1C3A5E] mb-1">Analytics Consultant</h3>
+              <p class="font-sans font-medium text-[#1A1A1A] mb-2">BCG</p>
+              <p class="font-sans text-sm text-[#1A1A1A]/60 max-w-2xl leading-relaxed">
+                Training structural thinking and data-driven decision making within top-tier consulting frameworks.
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-col md:flex-row gap-4 md:gap-12 py-8 border-t border-[#D4CFC7]">
+            <div class="md:w-40 flex-shrink-0"></div>
+            <div>
+              <h3 class="font-serif text-2xl text-[#1C3A5E] mb-1">Investment Banking Analyst</h3>
+              <p class="font-sans font-medium text-[#1A1A1A] mb-2">CITIC Securities</p>
+              <p class="font-sans text-sm text-[#1A1A1A]/60 max-w-2xl leading-relaxed">
+                Deep diving into A-share IPOs and understanding capital market mechanisms.
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-col md:flex-row gap-4 md:gap-12 py-8 border-t border-[#D4CFC7]">
+            <div class="md:w-40 flex-shrink-0"></div>
+            <div>
+              <h3 class="font-serif text-2xl text-[#1C3A5E] mb-1">Business Data Analyst</h3>
+              <p class="font-sans font-medium text-[#1A1A1A] mb-2">DiDi</p>
+              <p class="font-sans text-sm text-[#1A1A1A]/60 max-w-2xl leading-relaxed">
+                Supporting high-growth business decisions with rigorous data analytics.
+              </p>
+            </div>
+          </div>
+          <div class="w-full h-[1px] bg-[#D4CFC7]"></div>
         </div>
       </div>
     </section>
 
-    <!-- Connect Section -->
-    <section class="section connect-section">
-      <h2 class="section-title">Let's Connect</h2>
-      <p class="connect-text">
-        I'm always open to meaningful conversations about luxury retail, finance, and cross-cultural experiences. Feel free to reach out on <a href="https://www.linkedin.com/in/cynthia-liumingyue/" target="_blank" rel="noopener noreferrer">LinkedIn</a>.
-      </p>
+    <!-- Connect -->
+    <section class="py-24 bg-[#1C3A5E] text-[#F5F2EC] px-6 text-center">
+      <div class="max-w-3xl mx-auto space-y-8">
+        <p class="font-serif text-3xl font-light italic opacity-90">
+          "Open to conversations regarding luxury retail, Asian markets, sustainable investment, and cross-border opportunities."
+        </p>
+        <a href="https://linkedin.com/in/cynthia-liumingyue" target="_blank" class="inline-block px-10 py-4 border border-[#F5F2EC] hover:bg-[#F5F2EC] hover:text-[#1C3A5E] font-sans text-sm tracking-[0.2em] uppercase transition-all duration-300 no-underline text-[#F5F2EC]">
+          Connect on LinkedIn
+        </a>
+      </div>
     </section>
   </div>
 </Layout>
-
-<style>
-  .about-hero {
-    padding: 2rem 0 3rem;
-    max-width: 740px;
-  }
-
-  .about-hero h1 {
-    margin-bottom: 1.5rem;
-  }
-
-  .about-intro {
-    font-size: 1.15rem;
-    line-height: 1.8;
-    color: var(--color-text-muted);
-    margin: 0;
-  }
-
-  .section {
-    margin-top: 3.5rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--color-border);
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-family: var(--font-body);
-    font-weight: 600;
-    margin-bottom: 2rem;
-    color: var(--color-accent);
-  }
-
-  /* Timeline */
-  .timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-  }
-
-  .timeline-item {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .timeline-marker {
-    flex-shrink: 0;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    margin-top: 0.5rem;
-    position: relative;
-  }
-
-  .timeline-item:not(:last-child) .timeline-marker::after {
-    content: '';
-    position: absolute;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 1px;
-    height: calc(100% + 2rem);
-    background: var(--color-border);
-  }
-
-  .timeline-content {
-    flex: 1;
-  }
-
-  .timeline-header {
-    margin-bottom: 0.35rem;
-  }
-
-  .timeline-header h3 {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    margin-bottom: 0.15rem;
-  }
-
-  .timeline-company {
-    font-weight: 500;
-    color: var(--color-accent);
-    font-size: 0.95rem;
-  }
-
-  .timeline-meta {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .timeline-date,
-  .timeline-location {
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-  }
-
-  .timeline-location::before {
-    content: '';
-  }
-
-  .timeline-desc {
-    color: var(--color-text-muted);
-    font-size: 0.95rem;
-    line-height: 1.7;
-    margin-bottom: 0.75rem;
-  }
-
-  .timeline-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .tag {
-    display: inline-block;
-    background-color: var(--color-border);
-    color: var(--color-text-muted);
-    font-size: 0.78rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-  }
-
-  /* Connect */
-  .connect-section {
-    max-width: 600px;
-  }
-
-  .connect-text {
-    font-size: 1.05rem;
-    color: var(--color-text-muted);
-    line-height: 1.7;
-  }
-
-  .connect-text a {
-    color: var(--color-accent);
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 2px;
-  }
-
-  .connect-text a:hover {
-    color: var(--color-accent-light);
-  }
-
-  @media (max-width: 768px) {
-    .timeline-item {
-      gap: 1rem;
-    }
-
-    .timeline-meta {
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-  }
-</style>
