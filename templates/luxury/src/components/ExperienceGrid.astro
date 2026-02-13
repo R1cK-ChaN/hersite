@@ -1,0 +1,35 @@
+---
+interface ExperienceItem {
+  company: string;
+  role: string;
+  desc: string;
+}
+
+interface Props {
+  title?: string;
+  items: ExperienceItem[];
+}
+
+const { title = 'Selected Experience', items } = Astro.props;
+---
+
+<section id="experience" class="py-24 bg-white px-6 md:px-12 lg:px-24 border-y border-stone/30">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-end mb-16">
+            <h2 class="font-serif text-5xl text-ink">{title}</h2>
+            <div class="hidden md:block w-32 h-[1px] bg-ink"></div>
+        </div>
+
+        <div class="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {items.map((item) => (
+                <div class="group relative p-8 bg-cream/30 border border-stone hover:border-navy transition-all duration-300 hover:-translate-y-1">
+                    <div class="h-12 mb-6 opacity-50 grayscale group-hover:grayscale-0 transition-all">
+                        <span class="font-sans font-bold text-xl tracking-tighter text-ink">{item.company}</span>
+                    </div>
+                    <h3 class="font-serif text-2xl mb-3 text-navy">{item.role}</h3>
+                    <p class="font-sans text-sm leading-relaxed text-ink/70">{item.desc}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+</section>

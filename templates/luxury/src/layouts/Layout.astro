@@ -1,0 +1,60 @@
+---
+import '../styles/theme.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const { title, description = '', ogImage } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={new URL(ogImage, Astro.site)} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={new URL(ogImage, Astro.site)} />}
+
+    <title>{title}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD Person structured data -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": title.split('|')[0]?.trim() || title,
+      "url": Astro.site?.toString(),
+      "description": description,
+    })} />
+</head>
+<body class="bg-cream text-ink antialiased selection:bg-oldGold selection:text-white">
+
+    <!-- Agent-compatible nav (createPage tool looks for </nav>) -->
+    <nav class="sr-only" aria-label="Main navigation"></nav>
+
+    <slot />
+
+    <footer class="bg-navy text-cream/40 py-8 text-center font-sans text-xs uppercase tracking-widest border-t border-cream/10">
+        &copy; {new Date().getFullYear()} {title.split('|')[0]?.trim() || 'All Rights Reserved'}.  All Rights Reserved.
+    </footer>
+</body>
+</html>

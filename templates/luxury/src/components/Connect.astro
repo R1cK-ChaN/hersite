@@ -1,0 +1,34 @@
+---
+interface Props {
+  quote?: string;
+  linkedinUrl?: string;
+  email?: string;
+}
+
+const {
+  quote = 'Open to conversations regarding Asian markets, sustainable investment, and cross-border opportunities.',
+  linkedinUrl,
+  email,
+} = Astro.props;
+---
+
+<section id="connect" class="py-32 bg-navy text-cream px-6 text-center">
+    <div class="max-w-3xl mx-auto space-y-12">
+        <p class="font-serif text-3xl md:text-4xl font-light italic opacity-90">
+            "{quote}"
+        </p>
+
+        <div class="flex flex-col md:flex-row justify-center gap-8 pt-8">
+            {linkedinUrl && (
+                <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" class="inline-block px-10 py-4 border border-cream hover:bg-cream hover:text-navy font-sans text-sm tracking-[0.2em] uppercase transition-all duration-300">
+                    Connect on LinkedIn
+                </a>
+            )}
+            {email && (
+                <a href={`mailto:${email}`} class="inline-block px-10 py-4 border border-cream bg-cream text-navy hover:bg-transparent hover:text-cream font-sans text-sm tracking-[0.2em] uppercase transition-all duration-300">
+                    Send an Email
+                </a>
+            )}
+        </div>
+    </div>
+</section>

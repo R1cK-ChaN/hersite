@@ -7,11 +7,25 @@ dist/
 .astro/
 *.tsbuildinfo
 .turbo/
+.output/
+.next/
 
 # Environment & secrets
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.cert
+*.crt
+
+# Credentials & tokens
+.credentials.json
+*credentials*.json
+*secret*
+*token*.json
 
 # Vercel
 .vercel/
@@ -21,11 +35,15 @@ projects/
 sites/
 uploads/
 data/
+*.sqlite
+*.sqlite3
+*.db
 
 # OS files
 .DS_Store
 Thumbs.db
 Desktop.ini
+._*
 
 # Claude Code
 .claude/
@@ -36,12 +54,32 @@ Desktop.ini
 *.swp
 *.swo
 *~
+.project
+.classpath
+.settings/
 
 # Logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
 # Coverage & testing
 coverage/
 .nyc_output/
+
+# Archives & large binaries
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Misc
+*.bak
+*.tmp
+*.temp
+.cache/

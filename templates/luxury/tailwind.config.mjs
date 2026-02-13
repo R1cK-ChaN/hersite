@@ -4,15 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: '#F5F2EC',
-        ink: '#1A1A1A',
-        navy: '#1C3A5E',
-        oldGold: '#8B7355',
-        stone: '#D4CFC7',
+        cream: 'rgb(var(--color-cream-rgb) / <alpha-value>)',
+        ink: 'rgb(var(--color-ink-rgb) / <alpha-value>)',
+        navy: 'rgb(var(--color-navy-rgb) / <alpha-value>)',
+        oldGold: 'rgb(var(--color-oldGold-rgb) / <alpha-value>)',
+        stone: 'rgb(var(--color-stone-rgb) / <alpha-value>)',
       },
       fontFamily: {
-        serif: ['"Cormorant Garamond"', 'serif'],
-        sans: ['"DM Sans"', 'sans-serif'],
+        serif: ['var(--font-serif)'],
+        sans: ['var(--font-sans)'],
       },
       animation: {
         'fade-up': 'fadeUp 0.8s ease-out forwards',

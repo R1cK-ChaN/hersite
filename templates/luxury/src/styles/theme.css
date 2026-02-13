@@ -1,0 +1,60 @@
+:root {
+  /* Palette (raw values) */
+  --color-cream: #f5f2ec;
+  --color-cream-rgb: 245 242 236;
+  --color-ink: #1a1a1a;
+  --color-ink-rgb: 26 26 26;
+  --color-navy: #1c3a5e;
+  --color-navy-rgb: 28 58 94;
+  --color-oldGold: #8b7355;
+  --color-oldGold-rgb: 139 115 85;
+  --color-stone: #d4cfc7;
+  --color-stone-rgb: 212 207 199;
+
+  /* Semantic aliases (agent-friendly) */
+  --color-bg: #f5f2ec;
+  --color-text: #1a1a1a;
+  --color-primary: #1c3a5e;
+  --color-accent: #8b7355;
+  --color-border: #d4cfc7;
+  --color-surface: #ffffff;
+
+  /* Typography */
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "DM Sans", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-heading: "Cormorant Garamond", serif;
+
+  /* Layout */
+  --max-width: 1280px;
+  --radius: 0px;
+}
+
+/* Global font rules */
+body {
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+}

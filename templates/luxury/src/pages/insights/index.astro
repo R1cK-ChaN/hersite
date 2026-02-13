@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+const writings = await getCollection('writings');
+const sorted = writings.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Layout title="Insights | Cynthia Liu" description="Writings on finance, capital markets, and cross-border opportunities.">
+
+    <section class="py-24 md:py-32 px-6 md:px-12 lg:px-24">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="font-serif text-6xl md:text-7xl text-ink mb-4">Insights</h1>
+            <p class="font-sans text-lg text-ink/60 mb-16 max-w-2xl">Writings on finance, capital markets, and cross-border opportunities.</p>
+
+            <div class="space-y-0">
+                {sorted.map((post) => (
+                    <a href={`/insights/${post.id}/`} class="group flex flex-col md:flex-row gap-4 md:gap-12 py-10 border-t border-stone cursor-pointer hover:bg-white/50 transition-colors block">
+                        <div class="md:w-32 flex-shrink-0">
+                            <span class="font-sans text-xs uppercase tracking-widest text-oldGold">
+                                {post.data.pubDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                            </span>
+                        </div>
+                        <div class="flex-grow">
+                            <h2 class="font-serif text-3xl md:text-4xl mb-2 text-ink group-hover:text-navy transition-colors">
+                                {post.data.title}
+                            </h2>
+                            <p class="font-sans text-base text-ink/60 max-w-2xl">
+                                {post.data.description}
+                            </p>
+                        </div>
+                        <div class="hidden md:flex items-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-4 group-hover:translate-x-0 duration-300">
+                            <span class="text-3xl font-serif">&rarr;</span>
+                        </div>
+                    </a>
+                ))}
+                <div class="w-full h-[1px] bg-stone"></div>
+            </div>
+        </div>
+    </section>
+
+</Layout>
