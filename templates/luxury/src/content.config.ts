@@ -7,6 +7,7 @@ const experience = defineCollection({
     company: z.string(),
     role: z.string(),
     desc: z.string(),
+    logo: z.string().optional(),
     order: z.number().optional(),
   }),
 });

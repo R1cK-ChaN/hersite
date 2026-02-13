@@ -4,6 +4,6 @@ import sitemap from '@astrojs/sitemap';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  site: 'https://cynthia.md',
+  site: 'https://example.com',
   integrations: [mdx(), sitemap(), tailwind()],
 });

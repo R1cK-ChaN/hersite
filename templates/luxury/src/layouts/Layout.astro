@@ -48,8 +48,18 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 </head>
 <body class="bg-cream text-ink antialiased selection:bg-oldGold selection:text-white">
 
-    <!-- Agent-compatible nav (createPage tool looks for </nav>) -->
-    <nav class="sr-only" aria-label="Main navigation"></nav>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-md border-b border-stone/20" aria-label="Main navigation">
+        <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 flex items-center justify-between h-16">
+            <a href="/" class="font-serif text-xl text-ink hover:text-navy transition-colors">{title.split('|')[0]?.trim() || 'Home'}</a>
+            <div class="flex items-center gap-8 font-sans text-sm tracking-widest uppercase">
+                <a href="/#about" class="text-ink/70 hover:text-navy transition-colors hidden md:block">About</a>
+                <a href="/#experience" class="text-ink/70 hover:text-navy transition-colors hidden md:block">Experience</a>
+                <a href="/insights/" class="text-ink/70 hover:text-navy transition-colors">Insights</a>
+                <a href="/#connect" class="text-ink/70 hover:text-navy transition-colors hidden md:block">Connect</a>
+            </div>
+        </div>
+    </nav>
 
     <slot />
 
