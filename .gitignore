@@ -85,10 +85,9 @@ coverage/
 .cache/
 
 # Personal site content (kept locally, not committed)
-templates/luxury/src/pages/index.astro
+templates/luxury/src/site.config.ts
 templates/luxury/src/content/experience/
 templates/luxury/src/content/writings/
 templates/luxury/public/profile.jpg
 templates/luxury/public/logos/
-templates/luxury/src/layouts/Layout.astro
 scripts/

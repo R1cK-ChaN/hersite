@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import { siteConfig } from '../site.config';
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import About from '../components/About.astro';
+import ExperienceGrid from '../components/ExperienceGrid.astro';
+import Insights from '../components/Insights.astro';
+import Connect from '../components/Connect.astro';
+
+const experienceEntries = await getCollection('experience');
+const experience = experienceEntries
+  .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99))
+  .map((e) => ({ company: e.data.company, role: e.data.role, desc: e.data.desc, logo: e.data.logo }));
+
+const writingsEntries = await getCollection('writings');
+const writings = writingsEntries
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .map((w) => ({
+    date: w.data.pubDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    title: w.data.title,
+    excerpt: w.data.description,
+    slug: w.id,
+  }));
+
+const { hero, about, connect } = siteConfig;
+---
+
+<Layout title={siteConfig.title} description={siteConfig.description}>
+
+    <Hero
+        tagline={hero.tagline}
+        firstName={hero.firstName}
+        lastName={hero.lastName}
+        subtitle={hero.subtitle}
+        ctaLabel={hero.ctaLabel}
+        ctaHref={hero.ctaHref}
+        secondaryCtaLabel={hero.secondaryCtaLabel}
+        secondaryCtaHref={hero.secondaryCtaHref}
+        profileImageSrc={hero.profileImageSrc}
+    />
+
+    <About label="About">
+        {about.map((text) => (
+            <p class="opacity-90">{text}</p>
+        ))}
+    </About>
+
+    <ExperienceGrid items={experience} />
+
+    <Insights items={writings} />
+
+    <Connect
+        linkedinUrl={connect.linkedinUrl}
+        email={connect.email}
+    />
+
+</Layout>
