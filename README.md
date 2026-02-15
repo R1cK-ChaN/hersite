@@ -4,10 +4,10 @@ An AI-powered personal website builder for non-coders. Users interact through a 
 
 ## Live Deployment
 
-| Service            | URL                                        | Purpose                        |
-| ------------------ | ------------------------------------------ | ------------------------------ |
-| **Editor**         | [edit.cynthia.md](https://edit.cynthia.md) | AI-powered editor + chat agent |
-| **Published Site** | [cynthia.md](https://cynthia.md)           | Her live Astro website         |
+| Service            | URL                   | Purpose                        |
+| ------------------ | --------------------- | ------------------------------ |
+| **Editor**         | `edit.yourdomain.com` | AI-powered editor + chat agent |
+| **Published Site** | `yourdomain.com`      | Live Astro website             |
 
 - **Editor** is hosted on Railway (Docker container with persistent volume)
 - **Published site** is hosted on Vercel (static Astro build, auto-deployed via REST API)
@@ -30,7 +30,7 @@ All source code is written, TypeScript compiles cleanly, and the app is deployed
 | Frontend editor (`apps/editor`)  | Done   | React 19 + Vite 6, Zustand stores, 30+ components (wizard, chat, preview, publish), Tailwind CSS v4 + shadcn-style UI primitives     |
 | Wiring & integration             | Done   | Vite proxy config, Turborepo pipeline, Socket.IO event binding                                                                       |
 | Docker + cloud deploy            | Done   | Dockerfile, Railway deployment with persistent volume, Vercel for published site                                                     |
-| Custom domains                   | Done   | `edit.cynthia.md` (editor), `cynthia.md` (published site)                                                                            |
+| Custom domains                   | Done   | Custom domains for editor and published site                                                                                         |
 
 ## Architecture
 

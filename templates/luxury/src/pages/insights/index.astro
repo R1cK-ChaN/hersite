@@ -1,12 +1,14 @@
 ---
 import { getCollection } from 'astro:content';
+import { siteConfig } from '../../../personal/site.config';
 import Layout from '../../layouts/Layout.astro';
 
 const writings = await getCollection('writings');
 const sorted = writings.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const siteName = siteConfig.title.split('|')[0]?.trim() || 'Home';
 ---
 
-<Layout title="Insights | Cynthia Liu" description="Writings on finance, capital markets, and cross-border opportunities.">
+<Layout title={`Insights | ${siteName}`} description="Writings and reflections.">
 
     <section class="py-24 md:py-32 px-6 md:px-12 lg:px-24">
         <div class="max-w-5xl mx-auto">

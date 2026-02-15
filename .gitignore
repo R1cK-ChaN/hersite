@@ -86,10 +86,9 @@ coverage/
 
 # Personal site content (kept locally, not committed)
 # The personal/ folder holds all private assets: config, content, logos, profile photo.
-# Generic public files (favicon.svg, robots.txt) are excepted and still tracked by git.
+# Only favicon.svg is excepted and tracked by git.
 templates/luxury/personal/*
 !templates/luxury/personal/public/
 templates/luxury/personal/public/*
 !templates/luxury/personal/public/favicon.svg
-!templates/luxury/personal/public/robots.txt
 scripts/

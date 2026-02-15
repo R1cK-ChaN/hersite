@@ -6,6 +6,9 @@
  */
 
 export const siteConfig = {
+  // Site URL (used by Astro for sitemap, canonical links, etc.)
+  siteUrl: "https://yourdomain.com",
+
   // Page metadata
   title: "Jane Doe | Professional",
   description:
