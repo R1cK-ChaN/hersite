@@ -1,8 +1,8 @@
 /**
  * Site Configuration
  * ------------------
- * Copy this file to site.config.ts and fill in your details.
- * site.config.ts is gitignored — your personal info stays local.
+ * Copy this file to personal/site.config.ts and fill in your details.
+ * The personal/ directory is gitignored — your personal info stays local.
  */
 
 export const siteConfig = {
